@@ -4,6 +4,7 @@ import argparse #Arguments and flags
 import os #List files in a directory
 from mosestokenizer import * #Tokenize the text
 import pickle #Saving preprocessed data
+import sys #Max integer size
 
 DEFAULT_SOURCE = "data/"
 DEFAULT_DESTINATION = "data/"
@@ -35,13 +36,23 @@ def processEuroparl(args, tokenizer):
 	#Process German data
 	inputFile = open(args.src + "Europarl/europarl-v7.de-en.de", "r")
 	germanData = [] #List of samples in german
+	i = 0 #For limiting the amount of samples
 	for line in inputFile.readlines():
+		if i >= args.cap:
+			break
+		else:
+			i += 1
 		germanData.append(tokenizer(getCleanLine(line)))
 	inputFile.close()
 	#Process English data
 	inputFile = open(args.src + "Europarl/europarl-v7.de-en.en", "r")
 	englishData = [] #List of samples in english
+	i = 0
 	for line in inputFile.readlines():
+		if i >= args.cap:
+			break
+		else:
+			i += 1
 		englishData.append(line)
 	inputFile.close()
 	europarlData = (germanData, englishData)
@@ -71,6 +82,7 @@ if __name__ == "__main__":
 	#parser.add_argument('-t', dest='test', type=bool, default=False, help='This is a test argument, ignore it')
 	parser.add_argument('-d', dest='dest', type=str, default=DEFAULT_DESTINATION, help="Destination directory for this script's output data")
 	parser.add_argument('-s', dest='src', type=str, default=DEFAULT_SOURCE, help="Source directory for this script's input data")
+	parser.add_argument('-n', dest='cap', type=int, default= sys.maxsize, help="Limits the amount of samples processed per source. Default=sys.maxsize")
 	parser.add_argument('-e', action="store_true", dest='europarl', help="Processes the data from Europarl and exports it in europarl.pkl")
 	parser.add_argument('-p', action="store_true", dest='paracrawl', help="Processes the data from ParaCrawl and exports it in paracrawl.pkl")
 	args = parser.parse_args()
