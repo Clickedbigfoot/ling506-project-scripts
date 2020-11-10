@@ -14,6 +14,19 @@ DEFAULT_SPM_TRAIN_DATA = "data/NewsCrawl/newscrawl.2019.de.shuffled.deduped" #@T
 DEFAULT_VOCAB_SIZE = 20000
 
 """
+Segments the sample with the SentencePiece model
+@param input: the input to be segmented
+@param sp: the SentencePiece model
+@return the segmented output
+"""
+def getSegLine(input, sp):
+	result = []
+	for word in input:
+		for subword in sp.encode(word, out_type=str):
+			result.append(subword)
+	return result
+
+"""
 Loads a trained SentencePiece model saved as a binary pkl file.
 If there is no SentencePiece model found, creates a new one, trains it, and saves it to disk.
 @return: the SentencePiece model
@@ -39,7 +52,7 @@ Cleans the input of any characters or strings that shouldn't be processed
 """
 def getCleanLine(input):
 	# @TODO
-	return input.replace("\n", "")
+	return input.replace("\n", "").lower()
 
 """
 Processes and exports the commoncrawl data in a ready-to-use format
@@ -67,7 +80,8 @@ def processEuroparl(args, tokenizer, sp):
 			break
 		else:
 			i += 1
-		germanData.append(tokenizer(getCleanLine(line)))
+		germanData.append(getSegLine(tokenizer(getCleanLine(line)), sp))
+		print(germanData[i-1])
 	inputFile.close()
 	#Process English data
 	inputFile = open(args.src + "Europarl/europarl-v7.de-en.en", "r")
@@ -102,7 +116,7 @@ def main(args):
 		pickle.dump(ids, f, pickle.HIGHEST_PROTOCOL)"""
 	sp = getSentencePieceModel(args)
 	if args.europarl:
-		processEuroparl(args, tokenizer)
+		processEuroparl(args, tokenizer, sp)
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Preprocesses data for training a German-to-English machine translation system")
