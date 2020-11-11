@@ -10,8 +10,8 @@ import sentencepiece as spm #For BPE
 DEFAULT_SOURCE = "data/"
 DEFAULT_DESTINATION = "data/"
 DEFAULT_SPM_PATH = "m.model"
-DEFAULT_SPM_TRAIN_DATA = "data/NewsCrawl/newscrawl.2019.de.shuffled.deduped" #@TODO change this to German when it's downloaded
-DEFAULT_VOCAB_SIZE = 20000
+DEFAULT_SPM_TRAIN_DATA = "data/NewsCrawl/newscrawl.2019.de.shuffled.deduped.short"
+DEFAULT_VOCAB_SIZE = 50000
 
 """
 Segments the sample with the SentencePiece model
