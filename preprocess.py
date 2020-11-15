@@ -102,8 +102,9 @@ Cleans the input of any characters or strings that shouldn't be processed
 @return the cleaned input
 """
 def getCleanLine(input):
-	# @TODO
-	return input.replace("\n", "").lower()
+	# @TODO Filter out reddit usernames, emails, or html
+	result = "".join([c for c in input if c.isprintable()])
+	return result.replace("\n", "").lower()
 
 """
 Processes and exports the commoncrawl data in a ready-to-use format
@@ -112,7 +113,6 @@ Processes and exports the commoncrawl data in a ready-to-use format
 @param sp: the SentencePiece model to BPE
 """
 def processCommoncrawl(args, tokenizer, sp):
-	# @TODO
 	germanData = []
 	englishData = []
 	tokenizerEn = MosesTokenizer("en")
