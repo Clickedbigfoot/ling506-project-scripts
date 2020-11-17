@@ -5,17 +5,20 @@ import os #List files in a directory
 from mosestokenizer import * #Tokenize the text
 import pickle #Saving preprocessed data
 import sys #Max integer size
-import sentencepiece as spm #For BPE
 from langdetect import detect #For determining the language of the sample
 from langdetect import DetectorFactory #Seed the langdetect module for consistency
 import re #Regular expression usage
 
 DEFAULT_SOURCE = "data/"
-DEFAULT_DESTINATION = "data/"
-DEFAULT_SPM_PATH = "m.model"
-DEFAULT_SPM_TRAIN_DATA = "data/NewsCrawl/newscrawl.2019.de.shuffled.deduped.short"
-DEFAULT_VOCAB_SIZE = 50000
-SHORT = ".short" #Change to ".short" to load short versions of data or keep empty string to load full data
+TRAIN_DATA_EN = "trainDataEn.txt"
+TRAIN_DATA_DE = "trainDataDe.txt"
+VAL_DATA_EN = "valDataEn.txt"
+VAL_DATA_DE = "valDataDe.txt"
+TEST_DATA_EN = "testDataEn.txt"
+TEST_DATA_DE = "testDataDe.txt"
+SP_DATA_EN = "spmDataEn.txt"
+SP_DATA_DE = "spmDataDe.txt"
+SHORT = ".short" #Change to empty string to use the non-shortened versions of these datasets
 
 """
 Determines whether or not the sentence has too few words, too many, or any words that are too long
@@ -36,21 +39,19 @@ def isBadSize(sentence):
 	return False
 
 """
-Filters out samples that are detrimental to the system's training and tokenizes the input.
+Filters out samples that are detrimental to the system's training
 A sample is filtered out for the following reasons:
 1) It is not German on the input side and English on the output side
 2) A word is longer than 40 characters
 3) The character ratio between a pair is greater than 1:3 or 3:1
 4) There are less than four words in one sentence
 5) There are greater than four words in one sentence
-Any eligible sample has the German side tokenized with Moses tokenizer
 @param german: the german sentence being examined
 @param english: the english sentence being examined
-@param tokenizer: the moses tokenizer
-@param tokenizerEn: the moses tokenizer for english
+@param tokenizer: dict of moses tokenizers
 @return a tuple of (germanLine, englishLine) if the sample is usable, (None, None) otherwise
 """
-def getFiltered(german, english, tokenizer, tokenizerEn):
+def getFiltered(german, english, tokenizer):
 	if detect(german) != "de" or detect(english) != "en":
 		return (None, None)
 	lenEn = len(english)
@@ -59,43 +60,12 @@ def getFiltered(german, english, tokenizer, tokenizerEn):
 		return (None, None)
 	if lenDe < lenEn and lenDe * 3 < lenEn:
 		return (None, None)
-	germanTok = tokenizer(german)
-	if isBadSize(germanTok) or isBadSize(tokenizerEn(english)):
+	germanTok = tokenizer["de"](german)
+	englishTok = tokenizer["en"](english)
+	if isBadSize(germanTok) or isBadSize(englishTok):
 		return (None, None)
-	return (germanTok, english)
+	return (german, english)
 
-
-"""
-Segments the sample with the SentencePiece model
-@param input: the input to be segmented
-@param sp: the SentencePiece model
-@return the segmented output
-"""
-def getSegLine(input, sp):
-	result = []
-	for word in input:
-		for subword in sp.encode(word, out_type=str):
-			result.append(subword)
-	return result
-
-"""
-Loads a trained SentencePiece model saved as a binary pkl file.
-If there is no SentencePiece model found, creates a new one, trains it, and saves it to disk.
-@return: the SentencePiece model
-"""
-def getSentencePieceModel(args):
-	if os.path.exists(args.spm):
-		sp = spm.SentencePieceProcessor()
-		sp.Load(args.spm)
-		return sp
-	else:
-		if not os.path.exists(args.spt):
-			print("ERROR: No training data for SentencePiece found at " + args.spt + "\nPlease rectify and run again")
-			exit(1)
-		spm.SentencePieceTrainer.train(input=args.spt, model_prefix="m", vocab_size=args.spv, model_type="unigram")
-		sp = spm.SentencePieceProcessor()
-		sp.Load(args.spm)
-		return sp
 
 """
 Cleans the input of any characters or strings that shouldn't be processed
@@ -116,37 +86,32 @@ Processes and exports the commoncrawl data in a ready-to-use format
 def processCommoncrawl(args, tokenizer, sp):
 	germanData = []
 	englishData = []
-	tokenizerEn = MosesTokenizer("en")
 	inputFile = open(args.src + "CommonCrawl/commoncrawl.de-en.de" + SHORT, "r")
+	inputFileEn = open(args.src + "CommonCrawl/commoncrawl.de-en.en" + SHORT, "r")
 	i = 0
+	k = args.cap + round(args.cap * 0.01) #Cap for validation set
+	j = k + round(args.cap * 0.01) #Cap for testing set
 	for line in inputFile.readlines():
-		if i >= args.cap:
-			break;
-		else:
-			i += 1
-		germanData.append(getCleanLine(line))
-	inputFile.close()
-	inputFile = open(args.src + "CommonCrawl/commoncrawl.de-en.en" + SHORT, "r")
-	i = 0
-	for line in inputFile.readlines():
-		if i >= args.cap:
-			break;
-		else:
-			i += 1
-		englishData.append(getCleanLine(line))
-	inputFile.close()
-	#Now filter them
-	germanDataF = []
-	englishDataF = []
-	for i in range(0, len(germanData)):
-		(germanLine, englishLine) = getFiltered(germanData[i], englishData[i], tokenizer, tokenizerEn)
+		germanLine = getCleanLine(line)
+		englishLine = getCleanLine(inputFileEn.readline())
+		(germanLine, englishLine) = getFiltered(germanLine, englishLine, tokenizer)
 		if germanLine == None or englishLine == None:
 			continue
-		germanDataF.append(germanLine)
-		englishDataF.append(englishLine)
-	commoncrawlData = (germanDataF, englishDataF)
-	with open(args.dest + "commoncrawlData.pkl", "wb") as f:
-		pickle.dump(commoncrawlData, f, pickle.HIGHEST_PROTOCOL)
+		if i < args.cap:
+			fds["trainDe"].write(germanLine + "\n")
+			fds["trainEn"].write(englishLine + "\n")
+		elif i < k:
+			fds["valDe"].write(germanLine + "\n")
+			fds["valEn"].write(englishLine + "\n")
+		else:
+			fds["testDe"].write(germanLine + "\n")
+			fds["testEn"].write(englishLine + "\n")
+		i += 1 #Iterate forward
+		if i >= j:
+			#Finished with the testing set as well
+			break
+	inputFile.close()
+	inputFileEn.close()
 
 """
 Processes and exports the europarl data in a ready-to-use format
@@ -156,81 +121,100 @@ Processes and exports the europarl data in a ready-to-use format
 """
 def processEuroparl(args, tokenizer, sp):
 	#Process German data
-	inputFile = open(args.src + "Europarl/europarl-v7.de-en.de" + SHORT, "r")
-	germanData = [] #List of samples in german
-	i = 0 #For limiting the amount of samples
-	for line in inputFile.readlines():
-		if i >= args.cap:
-			break
-		else:
-			i += 1
-		germanData.append(getSegLine(tokenizer(getCleanLine(line)), sp))
-	inputFile.close()
-	#Process English data
-	inputFile = open(args.src + "Europarl/europarl-v7.de-en.en" + SHORT, "r")
-	englishData = [] #List of samples in english
-	i = 0
-	for line in inputFile.readlines():
-		if i >= args.cap:
-			break
-		else:
-			i += 1
-		englishData.append(line)
-	inputFile.close()
-	europarlData = (germanData, englishData)
-	with open(args.dest + "europarlData.pkl", "wb") as f:
-		pickle.dump(europarlData, f, pickle.HIGHEST_PROTOCOL)
-
-"""
-Processes and exports the paracrawl data in a ready-to-use format
-@param args: the argument parser
-@param tokenizer: the moses tokenizer set to tokenize german
-@param sp: the SentencePiece model to BPE
-"""
-def processParacrawl(args, tokenizer, sp):
 	germanData = []
 	englishData = []
-	tokenizerEn = MosesTokenizer("en")
-	inputFile = open(args.src + "ParaCrawl/en-de.txt" + SHORT, "r")
+	inputFile = open(args.src + "Europarl/europarl-v7.de-en.de" + SHORT, "r")
+	i = 0
+	k = args.cap + round(args.cap * 0.01) #Cap for validation set
+	j = k + round(args.cap * 0.01) #Cap for testing set
+	for line in inputFile.readlines():
+		germanLine = getCleanLine(line)
+		if i < args.cap:
+			fds["trainDe"].write(germanLine + "\n")
+		elif i < k:
+			fds["valDe"].write(germanLine + "\n")
+		else:
+			fds["testDe"].write(germanLine + "\n")
+		i += 1 #Iterate forward
+		if i >= j:
+			#Finished with the testing set as well
+			break
+	inputFile.close()
+	inputFile = open(args.src + "Europarl/europarl-v7.de-en.en" + SHORT, "r")
 	i = 0
 	for line in inputFile.readlines():
-		if i >= args.cap:
-			break
+		englishLine = getCleanLine(line)
+		if i < args.cap:
+			fds["trainEn"].write(englishLine + "\n")
+		elif i < k:
+			fds["valEn"].write(englishLine + "\n")
 		else:
-			i += 1
+			fds["testEn"].write(englishLine + "\n")
+		i += 1 #Iterate forward
+		if i >= j:
+			#Finished with the testing set as well
+			break
+	inputFile.close()
+
+"""
+Processes and saves the data to the respective files
+@param args: the argument parser
+@param fds: dict of the files to which data will be written
+@param tokenizer: dict of the tokenizers
+"""
+def processParacrawl(args, fds, tokenizer):
+	germanData = []
+	englishData = []
+	inputFile = open(args.src + "ParaCrawl/en-de.txt" + SHORT, "r")
+	i = 0
+	k = args.cap + round(args.cap * 0.01) #Cap for validation set
+	j = k + round(args.cap * 0.01) #Cap for testing set
+	for line in inputFile.readlines():
 		germanLine = getCleanLine(line[:line.index("\t")])
 		englishLine = getCleanLine(line[line.index("\t")+1:])
-		(germanLine, englishLine) = getFiltered(germanLine, englishLine, tokenizer, tokenizerEn)
+		(germanLine, englishLine) = getFiltered(germanLine, englishLine, tokenizer)
 		if germanLine == None or englishLine == None:
 			continue
-		germanData.append(germanLine)
-		englishData.append(englishLine)
+		if i < args.cap:
+			fds["trainDe"].write(germanLine + "\n")
+			fds["trainEn"].write(englishLine + "\n")
+		elif i < k:
+			fds["valDe"].write(germanLine + "\n")
+			fds["valEn"].write(englishLine + "\n")
+		else:
+			fds["testDe"].write(germanLine + "\n")
+			fds["testEn"].write(englishLine + "\n")
+		i += 1 #Iterate forward
+		if i >= j:
+			#Finished with the testing set as well
+			break
 	inputFile.close()
-	paracrawlData = (germanData, englishData)
-	with open(args.dest + "paracrawlData.pkl", "wb") as f:
-		pickle.dump(paracrawlData, f, pickle.HIGHEST_PROTOCOL)
 
 
 def main(args):
-	tokenizer = MosesTokenizer("de")
-	DetectorFactory.seed = 0
-	sp = getSentencePieceModel(args)
-	if args.europarl:
-		processEuroparl(args, tokenizer, sp)
-	if args.paracrawl:
-		processParacrawl(args, tokenizer, sp)
+	tokenizer = {} #Dict of the tokenizers
+	tokenizer["de"] = MosesTokenizer("de")
+	tokenizer["en"] = MosesTokenizer("en")
+	fds = {} #Holds the files
+	fds["trainEn"] = open(TRAIN_DATA_EN, "w+")
+	fds["trainDe"] = open(TRAIN_DATA_DE, "w+")
+	fds["valEn"] = open(VAL_DATA_EN, "w+")
+	fds["valDe"] = open(VAL_DATA_DE, "w+")
+	fds["testEn"] = open(TEST_DATA_EN, "w+")
+	fds["testDe"] = open(TEST_DATA_DE, "w+")
+	DetectorFactory.seed = 0 #For consistency with LangDetect
+	processParacrawl(args, fds, tokenizer)
+	processEuroparl(args, fds, tokenizer)
+	processCommoncrawl(args, fds, tokenizer)
+	#Close the files now that they're finished
+	for fd in fds.keys():
+		fds[fd].close()
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Preprocesses data for training a German-to-English machine translation system")
 	#parser.add_argument('-t', dest='test', type=bool, default=False, help='This is a test argument, ignore it')
-	parser.add_argument('-d', dest='dest', type=str, default=DEFAULT_DESTINATION, help="Destination directory for this script's output data. Default=" + DEFAULT_DESTINATION)
 	parser.add_argument('-s', dest='src', type=str, default=DEFAULT_SOURCE, help="Source directory for this script's input data. Default=" + DEFAULT_SOURCE)
-	parser.add_argument('-n', dest='cap', type=int, default= sys.maxsize, help="Limits the amount of samples processed per source. Default=sys.maxsize")
-	parser.add_argument('-spm', dest='spm', type=str, default=DEFAULT_SPM_PATH, help="Sets the path to a trained SentencePiece model. Default=" + DEFAULT_SPM_PATH)
-	parser.add_argument('-spt', dest='spt', type=str, default=DEFAULT_SPM_TRAIN_DATA, help="Sets the path to training data for a SentencePiece model. Default=" + DEFAULT_SPM_TRAIN_DATA)
-	parser.add_argument('-spv', dest='spv', type=int, default=DEFAULT_VOCAB_SIZE, help="Sets the vocab size for the SentencePiece model. Default=" + str(DEFAULT_VOCAB_SIZE))
-	parser.add_argument('-e', action="store_true", dest='europarl', help="Processes the data from Europarl and exports it in europarl.pkl")
-	parser.add_argument('-p', action="store_true", dest='paracrawl', help="Processes the data from ParaCrawl and exports it in paracrawl.pkl")
+	parser.add_argument('-n', dest='cap', type=int, default=sys.maxsize, help="Limits the amount of samples processed per source for the training data. 1\% of the size will be used for validation and test sets. Default=" + str(sys.maxsize))
 	args = parser.parse_args()
 	main(args)
 
