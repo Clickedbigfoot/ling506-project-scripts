@@ -8,6 +8,7 @@ import sys #Max integer size
 import sentencepiece as spm #For BPE
 from langdetect import detect #For determining the language of the sample
 from langdetect import DetectorFactory #Seed the langdetect module for consistency
+import re #Regular expression usage
 
 DEFAULT_SOURCE = "data/"
 DEFAULT_DESTINATION = "data/"
