@@ -8,6 +8,7 @@ import sys #Max integer size
 from langdetect import detect #For determining the language of the sample
 from langdetect import DetectorFactory #Seed the langdetect module for consistency
 import re #Regular expression usage
+import string #For getting a set of punctuation
 
 DEFAULT_SOURCE = "data/"
 TRAIN_DATA_EN = "trainDataEn.txt"
