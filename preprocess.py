@@ -113,6 +113,9 @@ def processCommoncrawl(args, tokenizer, sp):
 			break
 	inputFile.close()
 	inputFileEn.close()
+	print("Saved " + str(i) + " sentence pairs from CommonCrawl to training data")
+	print("Saved " + str(k - i) + " sentence pairs from CommonCrawl to validation data")
+	print("Saved " + str(j - k) + " sentence pairs from CommonCrawl to testing data")
 
 """
 Processes and exports the europarl data in a ready-to-use format
@@ -157,6 +160,9 @@ def processEuroparl(args, tokenizer, sp):
 			#Finished with the testing set as well
 			break
 	inputFile.close()
+	print("Saved " + str(i) + " sentence pairs from Europarl to training data")
+	print("Saved " + str(k - i) + " sentence pairs from Europarl to validation data")
+	print("Saved " + str(j - k) + " sentence pairs from Europarl to testing data")
 
 """
 Processes and saves the data to the respective files
@@ -192,6 +198,9 @@ def processParacrawl(args, fds, tokenizer):
 			#Finished with the testing set as well
 			break
 	inputFile.close()
+	print("Saved " + str(i) + " sentence pairs from ParaCrawl to training data")
+	print("Saved " + str(k - i) + " sentence pairs from ParaCrawl to validation data")
+	print("Saved " + str(j - k) + " sentence pairs from ParaCrawl to testing data")
 
 
 def main(args):
