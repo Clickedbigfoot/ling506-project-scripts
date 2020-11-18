@@ -192,6 +192,9 @@ def processParacrawl(args, fds, tokenizer):
 
 
 def main(args):
+	if args.src[-1] != "/":
+		#Fix the directory processing
+		args.src = args.src + "/"
 	tokenizer = {} #Dict of the tokenizers
 	tokenizer["de"] = MosesTokenizer("de")
 	tokenizer["en"] = MosesTokenizer("en")
