@@ -6,7 +6,8 @@ global {
 #Creates a trainingEn.txt trainingDe.txt, validation and testing versions of the former, as well as spmDataEn.txt and spmDataDe.txt in the data/ directory
 task prepare_data < spmTrainEn=data/NewsCrawl/newscrawl.2019.de.shuffled.deduped spmTrainDe=data/NewsCrawl/newscrawl.2019.de.shuffled.deduped source=data/ > trainEn=trainDataEn.txt trainDe=trainDataDe.txt testEn=testDataEn.txt testDe=testDataDe.txt valEn=valDataEn.txt valDe=valDataDe.txt spmEn=spmDataEn.txt spmDe=spmDataDe.txt :: N=1000000 {
 	./preprocess -n $N -s $source
-	head -n
+	head -n $N < $spmTrainDe > $spmDe
+	head -n $N < $spmTrainEn > $spmEn
 }
 
 task train_sentencepiece < inputEn=$spmEn@prepare_data inputDe=$spmDe@prepare_data > mEn=spEn.model mDe=spDe.model :: prefEn=./spEn prefDe=./spDe VS=35000 {
