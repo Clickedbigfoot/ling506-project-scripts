@@ -84,6 +84,7 @@ Processes and exports the commoncrawl data in a ready-to-use format
 @param sp: the SentencePiece model to BPE
 """
 def processCommoncrawl(args, tokenizer, sp):
+	print("Processing data from CommonCrawl")
 	germanData = []
 	englishData = []
 	inputFile = open(args.src + "CommonCrawl/commoncrawl.de-en.de" + SHORT, "r")
@@ -121,6 +122,7 @@ Processes and exports the europarl data in a ready-to-use format
 """
 def processEuroparl(args, tokenizer, sp):
 	#Process German data
+	print("Processing data from Europarl")
 	germanData = []
 	englishData = []
 	inputFile = open(args.src + "Europarl/europarl-v7.de-en.de" + SHORT, "r")
@@ -163,6 +165,7 @@ Processes and saves the data to the respective files
 @param tokenizer: dict of the tokenizers
 """
 def processParacrawl(args, fds, tokenizer):
+	print("Processing data from ParaCrawl")
 	germanData = []
 	englishData = []
 	inputFile = open(args.src + "ParaCrawl/en-de.txt" + SHORT, "r")
@@ -192,6 +195,7 @@ def processParacrawl(args, fds, tokenizer):
 
 
 def main(args):
+	print("Preprocess script starting")
 	if args.src[-1] != "/":
 		#Fix the directory processing
 		args.src = args.src + "/"
@@ -212,6 +216,7 @@ def main(args):
 	#Close the files now that they're finished
 	for fd in fds.keys():
 		fds[fd].close()
+	print("Done with preprocessing script")
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Preprocesses data for training a German-to-English machine translation system")
