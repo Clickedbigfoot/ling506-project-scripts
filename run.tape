@@ -4,8 +4,8 @@ global {
 
 #Filters out bad sentence pairs and tokenizes the text
 #Creates a trainingEn.txt trainingDe.txt, validation and testing versions of the former, as well as spmDataEn.txt and spmDataDe.txt in the data/ directory
-task prepare_data < spmTrainEn=data/NewsCrawl/newscrawl.2019.de.shuffled.deduped spmTrainDe=data/NewsCrawl/newscrawl.2019.de.shuffled.deduped source=data/ > trainEn=trainDataEn.txt trainDe=trainDataDe.txt testEn=testDataEn.txt testDe=testDataDe.txt valEn=valDataEn.txt valDe=valDataDe.txt spmEn=spmDataEn.txt spmDe=spmDataDe.txt :: N=1000000 {
-	./preprocess -n $N -s $source
+task prepare_data < script=./preprocess.py spmTrainEn=data/NewsCrawl/newscrawl.2019.de.shuffled.deduped spmTrainDe=data/NewsCrawl/newscrawl.2019.de.shuffled.deduped source=data/ > trainEn=trainDataEn.txt trainDe=trainDataDe.txt testEn=testDataEn.txt testDe=testDataDe.txt valEn=valDataEn.txt valDe=valDataDe.txt spmEn=spmDataEn.txt spmDe=spmDataDe.txt :: N=1000000 {
+	python3 $script -n $N -s $source
 	head -n $N < $spmTrainDe > $spmDe
 	head -n $N < $spmTrainEn > $spmEn
 }
