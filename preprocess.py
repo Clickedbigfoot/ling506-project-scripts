@@ -81,10 +81,10 @@ def getCleanLine(input):
 """
 Processes and exports the commoncrawl data in a ready-to-use format
 @param args: the argument parser
-@param tokenizer: the moses tokenizer set to tokenize german
-@param sp: the SentencePiece model to BPE
+@param fds: dict of the files to which data will be written
+@param tokenizer: dict of the tokenizers
 """
-def processCommoncrawl(args, tokenizer, sp):
+def processCommoncrawl(args, fds, tokenizer):
 	print("Processing data from CommonCrawl")
 	germanData = []
 	englishData = []
@@ -121,10 +121,9 @@ def processCommoncrawl(args, tokenizer, sp):
 """
 Processes and exports the europarl data in a ready-to-use format
 @param args: the argument parser
-@param tokenizer: the moses tokenizer set to tokenize german
-@param sp: the SentencePiece model to BPE
+@param fds: list of files to which the data will be written
 """
-def processEuroparl(args, tokenizer, sp):
+def processEuroparl(args, fds):
 	#Process German data
 	print("Processing data from Europarl")
 	germanData = []
@@ -221,7 +220,7 @@ def main(args):
 	fds["testDe"] = open(TEST_DATA_DE, "w+")
 	DetectorFactory.seed = 0 #For consistency with LangDetect
 	processParacrawl(args, fds, tokenizer)
-	processEuroparl(args, fds, tokenizer)
+	processEuroparl(args, tokenizer)
 	processCommoncrawl(args, fds, tokenizer)
 	#Close the files now that they're finished
 	for fd in fds.keys():
