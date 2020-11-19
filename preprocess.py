@@ -20,6 +20,9 @@ TEST_DATA_DE = "testDataDe.txt"
 SP_DATA_EN = "spmDataEn.txt"
 SP_DATA_DE = "spmDataDe.txt"
 SHORT = ".short" #Change to empty string to use the non-shortened versions of these datasets
+PATTERN = r"[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[\.]\w+[\.]?\w+"
+HTML_PATTERN = "<.*?>"
+REPLACE_TOKEN = "<KN>"
 
 """
 Determines whether or not the sentence has too few words, too many, or any words that are too long
@@ -76,6 +79,14 @@ Cleans the input of any characters or strings that shouldn't be processed
 def getCleanLine(input):
 	# @TODO Filter out reddit usernames, emails, or html
 	result = "".join([c for c in input if c.isprintable()])
+	emails = re.findall(PATTERN, result)
+	while len(emails) > 0:
+		result = result.replace(emails[0], REPLACE_TOKEN)
+		emails = re.findall(PATTERN, result)
+	html = re.findall(HTML_PATTERN, result)
+	while len(html) > 0:
+		result = result.replace(html[0], "")
+		html = re.findall(HTML_PATTERN, result)
 	return result.replace("\n", "").lower()
 
 """
