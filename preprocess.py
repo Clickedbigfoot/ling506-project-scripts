@@ -56,7 +56,13 @@ A sample is filtered out for the following reasons:
 @return a tuple of (germanLine, englishLine) if the sample is usable, (None, None) otherwise
 """
 def getFiltered(german, english, tokenizer):
-	if detect(german) != "de" or detect(english) != "en":
+	try:
+		germanD = detect(german)
+		englishD = detect(english)
+	except:
+		#Could not detect any language
+		return (None, None)
+	if germanD != "de" or englishD != "en":
 		return (None, None)
 	lenEn = len(english)
 	lenDe = len(german)
