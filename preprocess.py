@@ -93,7 +93,11 @@ def processCommoncrawl(args, fds, tokenizer):
 	i = 0
 	k = args.cap + round(args.cap * 0.01) #Cap for validation set
 	j = k + round(args.cap * 0.01) #Cap for testing set
-	for line in inputFile.readlines():
+	while 1:
+		line = inputFile.readline()
+		if line == "":
+			#EOF reached
+			break
 		germanLine = getCleanLine(line)
 		englishLine = getCleanLine(inputFileEn.readline())
 		(germanLine, englishLine) = getFiltered(germanLine, englishLine, tokenizer)
@@ -132,7 +136,10 @@ def processEuroparl(args, fds):
 	i = 0
 	k = args.cap + round(args.cap * 0.01) #Cap for validation set
 	j = k + round(args.cap * 0.01) #Cap for testing set
-	for line in inputFile.readlines():
+	while 1:
+		line = inputFile.readline()
+		if line == "":
+			break #EOF reached
 		germanLine = getCleanLine(line)
 		if i < args.cap:
 			fds["trainDe"].write(germanLine + "\n")
@@ -147,7 +154,10 @@ def processEuroparl(args, fds):
 	inputFile.close()
 	inputFile = open(args.src + "Europarl/europarl-v7.de-en.en" + SHORT, "r")
 	i = 0
-	for line in inputFile.readlines():
+	while 1:
+		line = inputFile.readline()
+		if line == "":
+			break #EOF reached
 		englishLine = getCleanLine(line)
 		if i < args.cap:
 			fds["trainEn"].write(englishLine + "\n")
@@ -178,7 +188,11 @@ def processParacrawl(args, fds, tokenizer):
 	i = 0
 	k = args.cap + round(args.cap * 0.01) #Cap for validation set
 	j = k + round(args.cap * 0.01) #Cap for testing set
-	for line in inputFile.readlines():
+	while 1:
+		line = inputFile.readline()
+		if line == "":
+			#EOF reached
+			break
 		germanLine = getCleanLine(line[:line.index("\t")])
 		englishLine = getCleanLine(line[line.index("\t")+1:])
 		(germanLine, englishLine) = getFiltered(germanLine, englishLine, tokenizer)
