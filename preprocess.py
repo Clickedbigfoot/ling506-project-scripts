@@ -262,7 +262,7 @@ def main(args):
 	fds["testDe"] = open(TEST_DATA_DE, "w+")
 	DetectorFactory.seed = 0 #For consistency with LangDetect
 	processParacrawl(args, fds, tokenizer)
-	processEuroparl(args, tokenizer)
+	processEuroparl(args, fds)
 	processCommoncrawl(args, fds, tokenizer)
 	#Close the files now that they're finished
 	for fd in fds.keys():
