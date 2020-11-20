@@ -65,6 +65,8 @@ def getFiltered(german, english, tokenizer):
 		return (None, None)
 	if germanD != "de" or englishD != "en":
 		print("Skipping for wrong languages")
+		print("German idenified as: " + str(germanD))
+		print("English identified as: " + str(englishD))
 		return (None, None)
 	lenEn = len(english)
 	lenDe = len(german)
