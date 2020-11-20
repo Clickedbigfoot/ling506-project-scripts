@@ -135,7 +135,7 @@ def processCommoncrawl(args, fds, tokenizer):
 			break
 	inputFile.close()
 	inputFileEn.close()
-	print("Saved " + str(arg.cap) + " sentence pairs from CommonCrawl to training data")
+	print("Saved " + str(args.cap) + " sentence pairs from CommonCrawl to training data")
 	print("Saved " + str(k - args.cap) + " sentence pairs from CommonCrawl to validation data")
 	print("Saved " + str(j - k) + " sentence pairs from CommonCrawl to testing data")
 
