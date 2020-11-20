@@ -10,23 +10,19 @@ task prepare_data < script=./preprocess.py spmTrainEn=data/NewsCrawl/newscrawl.2
 	head -n $N < $spmTrainEn > $spmEn
 }
 
-task train_sentencepiece < script=./spTrainer.py inputEn=$spmEn@prepare_data inputDe=$spmDe@prepare_data > mEn=spEn.model mDe=spDe.model :: prefEn=./spEn prefDe=./spDe VS=32000 userSym=<KN> {
-	python3 $script --input $inputEn --model_prefix $prefEn --vocab_size $VS --character_coverage 1 --user_defined_symbols $userSym
+task train_sentencepiece < script=./spTrainer.py inputEn=$spmEn@prepare_data inputDe=$spmDe@prepare_data > mEn=spEn.model mDe=spDe.model :: prefEn=./spEn prefDe=./spDe VS=32000 VSen=23000 userSym=<KN> {
+	python3 $script --input $inputEn --model_prefix $prefEn --vocab_size $VSen --character_coverage 1 --user_defined_symbols $userSym
 	python3 $script --input $inputDe --model_prefix $prefDe --vocab_size $VS --character_coverage 1 --user_defined_symbols $userSym
 }
 
-task run_sentencepiece_en < model=$mEn@train_sentencepiece trainI=$trainEn@prepare_data valI=$valEn@prepare_data testI=$testEn@prepare_data > train=trainDataEn.txt val=valDataEn.txt test=testDataEn.txt {
+task run_sentencepiece_en < script=./spEncoder.py model=$mEn@train_sentencepiece trainI=$trainEn@prepare_data valI=$valEn@prepare_data testI=$testEn@prepare_data > train=trainDataEn.txt val=valDataEn.txt test=testDataEn.txt {
 	spm_encode --model=$model --input $trainI --ouput $train
 	spm_encode --model=$model --input $valI -output $val
 	spm_encode --model=$model --input $testI --output $test
 }
 
-task run_sentencepiece_de < model=$mDe@train_sentencepiece trainI=$trainDe@prepare_data valI=$valDe@prepare_data testI=$testDe@prepare_data > train=trainDataDe.txt val=valDataDe.txt test=testDataDe.txt {
-	spm_encode --model=$model < $trainI > $train
-	spm_encode --model=$model < $valI > $val
-	spm_encode --model=$model < $testI > $test
-}
-
-task run_model {
-	echo Hello
+task run_sentencepiece_de < script=./spEncoder.py model=$mDe@train_sentencepiece trainI=$trainDe@prepare_data valI=$valDe@prepare_data testI=$testDe@prepare_data > train=trainDataDe.txt val=valDataDe.txt test=testDataDe.txt {
+	python3 $script --model=$model --input $trainI --output $train
+	python3 $script --model=$model --input $valI --output $val
+	python3 $script --model=$model --input $testI --output $test
 }

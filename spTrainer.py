@@ -24,6 +24,3 @@ if __name__ == "__main__":
 	parser.add_argument('--user_defined_symbols', dest='userSymb', type=str, default="", help="User defined symbols separated by commas")
 	args = parser.parse_args()
 	main(args)
-
-"""with open(args.destination + OUTPUT_ID_KEY, "wb") as f:
-		pickle.dump(ids, f, pickle.HIGHEST_PROTOCOL)"""

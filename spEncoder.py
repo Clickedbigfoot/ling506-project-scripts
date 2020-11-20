@@ -31,6 +31,3 @@ if __name__ == "__main__":
 	parser.add_argument('--model', dest='model', type=str, default="", help="The trained model to use")
 	args = parser.parse_args()
 	main(args)
-
-"""with open(args.destination + OUTPUT_ID_KEY, "wb") as f:
-		pickle.dump(ids, f, pickle.HIGHEST_PROTOCOL)"""
