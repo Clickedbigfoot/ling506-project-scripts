@@ -6,7 +6,7 @@ import sentencepiece as spm #Subword segmentation
 
 
 def main(args):
-	if args.input == "" or args.modelPrefix == "" or args.vocab_size == 0 or args.charCoverage == 0:
+	if args.input == "" or args.modelPrefix == "" or args.vocabSize == 0 or args.charCoverage == 0:
 		print("Incorrect usage. Please see spTrainer.py -h")
 		exit(1)
 	if args.userSymb != "":
