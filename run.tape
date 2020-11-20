@@ -10,11 +10,9 @@ task prepare_data < script=./preprocess.py spmTrainEn=data/NewsCrawl/newscrawl.2
 	head -n $N < $spmTrainEn > $spmEn
 }
 
-task train_sentencepiece < inputEn=$spmEn@prepare_data inputDe=$spmDe@prepare_data > mEn=spEn.model mDe=spDe.model :: prefEn=./spEn prefDe=./spDe VS=35000 {
-	spm_train --input=$inputEn --model_prefix=$prefEn --vocab_size=$VS --character_coverage=1
-	spm_train --input=$inputDe --model_prefix=$prefDe --vocab_size=$VS --character_coverage=1
-	echo "" >> $mEn
-	echo "" >> $mDe
+task train_sentencepiece < script=./spTrainer.py inputEn=$spmEn@prepare_data inputDe=$spmDe@prepare_data > mEn=spEn.model mDe=spDe.model :: prefEn=./spEn prefDe=./spDe VS=35000 userSym=<KN> {
+	python3 $script --input $inputEn --model_prefix $prefEn --vocab_size $VS --character_coverage 1 --user_defined_symbols $userSym
+	python3 $script --input $inputDe --model_prefix $prefDe --vocab_size $VS --character_coverage 1 --user_defined_symbols $userSym
 }
 
 task run_sentencepiece_en < model=$mEn@train_sentencepiece trainI=$trainEn@prepare_data valI=$valEn@prepare_data testI=$testEn@prepare_data > train=trainDataEn.txt val=valDataEn.txt test=testDataEn.txt {
