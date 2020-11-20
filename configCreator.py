@@ -12,7 +12,6 @@ def main(args):
 	inputFile = open(args.tmpt, "r")
 	template = inputFile.read()
 	inputFile.close()
-	print("here is args.src_vocab: " + args.src_vocab)
 	if args.src_vocab != "":
 		template = template.replace("src_vocab: system_data.vocab.src", "src_vocab: " + args.src_vocab)
 	if args.tgt_vocab != "":
@@ -28,7 +27,7 @@ def main(args):
 	if args.val_path_tgt != "":
 		template = template.replace("path_tgt: valDataEn.txt", "path_tgt: " + args.val_path_tgt)
 	if args.save_model != "":
-		template = template.replace("foo", args.save_model)
+		template = template.replace("save_model: foo", "save_model: " + args.save_model)
 	if args.n_layers != "":
 		template = template.replace("enc_layers: 6", "enc_layers: " + args.n_layers)
 		template = template.replace("dec_layers: 6", "dec_layers: " + args.n_layers)
