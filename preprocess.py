@@ -61,18 +61,23 @@ def getFiltered(german, english, tokenizer):
 		englishD = detect(english)
 	except:
 		#Could not detect any language
+		print("Skipping because no features detected")
 		return (None, None)
 	if germanD != "de" or englishD != "en":
+		print("Skipping for wrong languages")
 		return (None, None)
 	lenEn = len(english)
 	lenDe = len(german)
 	if lenEn < lenDe and lenEn * 3 < lenDe:
+		print("Skipping for ratio (Large german)")
 		return (None, None)
 	if lenDe < lenEn and lenDe * 3 < lenEn:
+		print("Skipping for ratio (Large english)")
 		return (None, None)
 	germanTok = tokenizer["de"](german)
 	englishTok = tokenizer["en"](english)
 	if isBadSize(germanTok) or isBadSize(englishTok):
+		print("Skipping because of bad size")
 		return (None, None)
 	return (german, english)
 
