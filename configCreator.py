@@ -7,16 +7,16 @@ import sentencepiece as spm #Subword segmentation
 
 def main(args):
 	if args.tmpt == "" or args.output == "":
-		print("Incorrect usage. Template and output arguments are required. Please see spEncoder.py -h")
+		print("Incorrect usage. Template and output arguments are required. Please see configCreator.py -h")
 		exit(1)
 	inputFile = open(args.tmpt, "r")
 	template = inputFile.read()
 	inputFile.close()
 	print("here is args.src_vocab: " + args.src_vocab)
 	if args.src_vocab != "":
-		template = template.replace("system_data.vocab.src", args.src_vocab)
+		template = template.replace("src_vocab: system_data.vocab.src", "src_vocab: " + args.src_vocab)
 	if args.tgt_vocab != "":
-		template = template.replace("system_data.vocab.tgt", args.tgt_vocab)
+		template = template.replace("tgt_vocab: system_data.vocab.tgt", "tgt_vocab: " + args.tgt_vocab)
 	if args.save_data != "":
 		template = template.replace("save_data: system_data", "save_data: " + args.save_data)
 	if args.train_path_src != "":
