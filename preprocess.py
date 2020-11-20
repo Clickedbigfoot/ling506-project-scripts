@@ -202,11 +202,14 @@ def processParacrawl(args, fds, tokenizer):
 	germanData = []
 	englishData = []
 	inputFile = open(args.src + "ParaCrawl/en-de.txt" + SHORT, "r")
+	print("Finished opening the file")
 	i = 0
 	k = args.cap + round(args.cap * 0.01) #Cap for validation set
 	j = k + round(args.cap * 0.01) #Cap for testing set
 	while 1:
+		print("This is iteration " + str(i))
 		line = inputFile.readline()
+		print("Just read in a line: " + line)
 		if line == "":
 			#EOF reached
 			break
@@ -214,6 +217,7 @@ def processParacrawl(args, fds, tokenizer):
 		englishLine = getCleanLine(line[line.index("\t")+1:])
 		(germanLine, englishLine) = getFiltered(germanLine, englishLine, tokenizer)
 		if germanLine == None or englishLine == None:
+			print("Skipping")
 			continue
 		if i < args.cap:
 			fds["trainDe"].write(germanLine + "\n")
