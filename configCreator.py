@@ -13,19 +13,19 @@ def main(args):
 	template = inputFile.read()
 	inputFile.close()
 	if args.src_vocab != "":
-		template = template.replace("data.vocab.src", args.src_vocab)
+		template = template.replace("system_data.vocab.src", args.src_vocab)
 	if args.tgt_vocab != "":
-		template = template.replace("data.vocab.tgt", args.tgt_vocab)
+		template = template.replace("system_data.vocab.tgt", args.tgt_vocab)
 	if args.save_data != "":
-		template = template.replace("system_data", args.save_data)
+		template = template.replace("save_data: system_data", "save_data: " + args.save_data)
 	if args.train_path_src != "":
-		template = template.replace("trainDataDe.txt", args.train_path_src)
+		template = template.replace("path_src: trainDataDe.txt", "path_src: " + args.train_path_src)
 	if args.train_path_tgt != "":
-		template = template.replace("trainDataEn.txt", args.train_path_tgt)
+		template = template.replace("path_tgt: trainDataEn.txt", "path_tgt: " + args.train_path_tgt)
 	if args.val_path_src != "":
-		template = template.replace("valDataDe.txt", args.val_path_src)
+		template = template.replace("path_src: valDataDe.txt", "path_src: " + args.val_path_src)
 	if args.val_path_tgt != "":
-		template = template.replace("valDataEn.txt", args.val_path_tgt)
+		template = template.replace("path_tgt: valDataEn.txt", "path_tgt: " + args.val_path_tgt)
 	if args.save_model != "":
 		template = template.replace("foo", args.save_model)
 	if args.n_layers != "":
