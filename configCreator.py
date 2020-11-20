@@ -12,6 +12,7 @@ def main(args):
 	inputFile = open(args.tmpt, "r")
 	template = inputFile.read()
 	inputFile.close()
+	print("here is args.src_vocab: " + args.src_vocab)
 	if args.src_vocab != "":
 		template = template.replace("system_data.vocab.src", args.src_vocab)
 	if args.tgt_vocab != "":
