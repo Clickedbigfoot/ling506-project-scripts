@@ -16,9 +16,9 @@ task train_sentencepiece < script=./spTrainer.py inputEn=$spmEn@prepare_data inp
 }
 
 task run_sentencepiece_en < script=./spEncoder.py model=$mEn@train_sentencepiece trainI=$trainEn@prepare_data valI=$valEn@prepare_data testI=$testEn@prepare_data > train=trainDataEn.txt val=valDataEn.txt test=testDataEn.txt {
-	spm_encode --model=$model --input $trainI --ouput $train
-	spm_encode --model=$model --input $valI -output $val
-	spm_encode --model=$model --input $testI --output $test
+	python3 $script --model=$model --input $trainI --ouput $train
+	python3 $script --model=$model --input $valI -output $val
+	python3 $script --model=$model --input $testI --output $test
 }
 
 task run_sentencepiece_de < script=./spEncoder.py model=$mDe@train_sentencepiece trainI=$trainDe@prepare_data valI=$valDe@prepare_data testI=$testDe@prepare_data > train=trainDataDe.txt val=valDataDe.txt test=testDataDe.txt {
