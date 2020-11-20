@@ -61,25 +61,18 @@ def getFiltered(german, english, tokenizer):
 		englishD = detect(english)
 	except:
 		#Could not detect any language
-		print("Skipping because no features detected")
 		return (None, None)
 	if germanD != "de" or englishD != "en":
-		print("Skipping for wrong languages")
-		print("German idenified as: " + str(germanD))
-		print("English identified as: " + str(englishD))
 		return (None, None)
 	lenEn = len(english)
 	lenDe = len(german)
 	if lenEn < lenDe and lenEn * 3 < lenDe:
-		print("Skipping for ratio (Large german)")
 		return (None, None)
 	if lenDe < lenEn and lenDe * 3 < lenEn:
-		print("Skipping for ratio (Large english)")
 		return (None, None)
 	germanTok = tokenizer["de"](german)
 	englishTok = tokenizer["en"](english)
 	if isBadSize(germanTok) or isBadSize(englishTok):
-		print("Skipping because of bad size")
 		return (None, None)
 	return (german, english)
 
@@ -209,14 +202,11 @@ def processParacrawl(args, fds, tokenizer):
 	germanData = []
 	englishData = []
 	inputFile = open(args.src + "ParaCrawl/en-de.txt" + SHORT, "r")
-	print("Finished opening the file")
 	i = 0
 	k = args.cap + round(args.cap * 0.01) #Cap for validation set
 	j = k + round(args.cap * 0.01) #Cap for testing set
 	while 1:
-		print("This is iteration " + str(i))
 		line = inputFile.readline()
-		print("Just read in a line: " + line)
 		if line == "":
 			#EOF reached
 			break
@@ -224,7 +214,6 @@ def processParacrawl(args, fds, tokenizer):
 		englishLine = getCleanLine(line[:line.index("\t")])
 		(germanLine, englishLine) = getFiltered(germanLine, englishLine, tokenizer)
 		if germanLine == None or englishLine == None:
-			print("Skipping")
 			continue
 		if i < args.cap:
 			fds["trainDe"].write(germanLine + "\n")
