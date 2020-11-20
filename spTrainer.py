@@ -10,9 +10,9 @@ def main(args):
 		print("Incorrect usage. Please see spTrainer.py -h")
 		exit(1)
 	if args.userSymb != "":
-		spm.SentencePieceTrainer.train(input=args.input, model_prefix=args.model_prefix, vocab_size=args.vocab_size, character_coverage=args.charCoverage, user_defined_symbols=args.userSymb)
+		spm.SentencePieceTrainer.train(input=args.input, model_prefix=args.modelPrefix, vocab_size=args.vocabSize, character_coverage=args.charCoverage, user_defined_symbols=args.userSymb)
 	else:
-		spm.SentencePieceTrainer.train(input=args.input, model_prefix=args.model_prefix, vocab_size=args.vocab_size, character_coverage=args.charCoverage)
+		spm.SentencePieceTrainer.train(input=args.input, model_prefix=args.modelPrefix, vocab_size=args.vocabSize, character_coverage=args.charCoverage)
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Python script wrapper for spm_train command in the terminal")
