@@ -220,8 +220,8 @@ def processParacrawl(args, fds, tokenizer):
 		if line == "":
 			#EOF reached
 			break
-		germanLine = getCleanLine(line[:line.index("\t")])
-		englishLine = getCleanLine(line[line.index("\t")+1:])
+		germanLine = getCleanLine(line[line.index("\t")+1:])
+		englishLine = getCleanLine(line[:line.index("\t")])
 		(germanLine, englishLine) = getFiltered(germanLine, englishLine, tokenizer)
 		if germanLine == None or englishLine == None:
 			print("Skipping")
