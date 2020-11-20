@@ -24,7 +24,7 @@ def main(args):
 	outputFile.close()
 
 if __name__ == "__main__":
-	parser = argparse.ArgumentParser(description="Python script wrapper for spm_train command in the terminal")
+	parser = argparse.ArgumentParser(description="Python script wrapper for spm_encode command in the terminal")
 	#parser.add_argument('-t', dest='test', type=bool, default=False, help='This is a test argument, ignore it')
 	parser.add_argument('--input', dest='input', type=str, default="", help="Data for encoding")
 	parser.add_argument('--output', dest='output', type=str, default="", help="Output for encoded data")
