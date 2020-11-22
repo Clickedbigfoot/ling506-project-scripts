@@ -29,6 +29,8 @@ task run_sentencepiece_de < script=./spEncoder.py model=$mDe@train_sentencepiece
 
 task train_transformer < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en trainSrc=$train@run_sentencepiece_de trainTgt=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en > config=de_en0.yaml vSrc=system_data.vocab.src vTgt=system_data.vocab.tgt model=foo_step1000.pt :: vc=system_data {
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model
+	echo "" > $vSrc
+	echo "" > $vTgt
 	onmt_build_vocab -config $config
 	onmt_train -config $config
 }
