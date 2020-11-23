@@ -3,7 +3,11 @@
 import argparse #Arguments and flags
 import sentencepiece as spm #Subword segmentation
 
-
+def convertToInt(strList):
+	intList = []
+	for string in strList:
+		intList.append(int(string))
+	return intList
 
 def main(args):
 	if args.input == "" or args.output == "" or args.model == "":
@@ -17,8 +21,10 @@ def main(args):
 		if line == "":
 			break #EOF reached
 		sample = line.split()
+		sample = convertToInt(sample)
 		print(sample)
 		line = model.decode(sample)
+		print(line)
 		outputFile.write(line)
 		outputFile.write("\n")
 	inputFile.close()
