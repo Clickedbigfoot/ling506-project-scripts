@@ -35,7 +35,7 @@ task train_transformer < script=./configCreator.py template=./de_en.yaml trainDe
 	onmt_train -config $config
 }
 
-task score_models < decodeScript=./spDecoder.py spModel=$model@run_sentencepiece_en model=$modelOutput@train_transformer src=$test@run_sentencepiece_de gold=$test@run_sentencepiece_en > pred=predictions.txt predDetok=predictionsDetokenized.txt {
+task score_models < decodeScript=./spDecoder.py spModel=$mEn@train_sentencepiece model=$modelOutput@train_transformer src=$test@run_sentencepiece_de gold=$test@run_sentencepiece_en > pred=predictions.txt predDetok=predictionsDetokenized.txt {
 	onmt_translate -model $model -src $src -output $pred
 	python3 $decodeScript --model $spModel --input $pred --output $predDetok
 	sacrebleu $gold < $predDetok
