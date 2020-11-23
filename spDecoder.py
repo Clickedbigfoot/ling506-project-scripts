@@ -25,9 +25,7 @@ def main(args):
 			break #EOF reached
 		sample = line.split()
 		sample = convertToInt(sample)
-		print(sample)
 		line = model.decode(sample)
-		print(line)
 		outputFile.write(line)
 		outputFile.write("\n")
 	inputFile.close()
