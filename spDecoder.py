@@ -6,7 +6,7 @@ import sentencepiece as spm #Subword segmentation
 def convertToInt(strList):
 	intList = []
 	for string in strList:
-		if string == "<UNK>":
+		if string == "<unk>":
 			intList.append(0)
 			continue
 		intList.append(int(string))
