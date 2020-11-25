@@ -13,9 +13,11 @@ def main(args):
 	inputFile = open(args.input, "r")
 	outputFile = open(args.output, "w+")
 	while 1:
+		if line == "":
+			break; #EOF reached
 		line = inputFile.readline().replace("\n", "")
 		if line == "":
-			break #EOF reached
+			continue #Empty line, but not necessarily EOF yet
 		line = model.encode(line)
 		for token in line:
 			outputFile.write(str(token) + " ")
