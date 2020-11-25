@@ -178,23 +178,7 @@ def processEuroparl(args, fds, tokenizer):
 			#Finished with the testing set as well
 			break
 	inputFile.close()
-	i = 0
-	while 1:
-		line = inputFile.readline()
-		if line == "":
-			break #EOF reached
-		englishLine = getCleanLine(line)
-		if i < args.cap:
-			fds["trainEn"].write(englishLine + "\n")
-		elif i < k:
-			fds["valEn"].write(englishLine + "\n")
-		else:
-			fds["testEn"].write(englishLine + "\n")
-		i += 1 #Iterate forward
-		if i >= j:
-			#Finished with the testing set as well
-			break
-	inputFile.close()
+	inputFileEn.close()
 	print("Saved " + str(args.cap) + " sentence pairs from Europarl to training data")
 	print("Saved " + str(k - args.cap) + " sentence pairs from Europarl to validation data")
 	print("Saved " + str(j - k) + " sentence pairs from Europarl to testing data")
