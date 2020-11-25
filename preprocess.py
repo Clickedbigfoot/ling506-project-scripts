@@ -142,33 +142,42 @@ def processCommoncrawl(args, fds, tokenizer):
 Processes and exports the europarl data in a ready-to-use format
 @param args: the argument parser
 @param fds: list of files to which the data will be written
+@param tokenizer: dict of tokenizers
 """
-def processEuroparl(args, fds):
+def processEuroparl(args, fds, tokenizer):
 	#Process German data
 	print("Processing data from Europarl")
 	germanData = []
 	englishData = []
 	inputFile = open(args.src + "Europarl/europarl-v7.de-en.de" + SHORT, "r")
+	inputFileEn = open(args.src + "Europarl/europarl-v7.de-en.en" + SHORT, "r")
 	i = 0
 	k = args.cap + round(args.cap * 0.01) #Cap for validation set
 	j = k + round(args.cap * 0.01) #Cap for testing set
 	while 1:
-		line = inputFile.readline()
-		if line == "":
+		germanLine = inputFile.readline()
+		englishLine = inputFileEn.readline()
+		if germanLine == "":
 			break #EOF reached
-		germanLine = getCleanLine(line)
+		(germanLine, englishLine) = getFiltered(germanLine, englishLine, tokenizer)
+		if germanLine == None or englishLine == None:
+			continue
+		germanLine = getCleanLine(germanLine)
+		englishLine = getCleanLine(englishLine)
 		if i < args.cap:
 			fds["trainDe"].write(germanLine + "\n")
+			fds["trainEn"].write(englishLine + "\n")
 		elif i < k:
 			fds["valDe"].write(germanLine + "\n")
+			fds["valEn"].write(englishLine + "\n")
 		else:
 			fds["testDe"].write(germanLine + "\n")
+			fds["testEn"].write(englishLine + "\n")
 		i += 1 #Iterate forward
 		if i >= j:
 			#Finished with the testing set as well
 			break
 	inputFile.close()
-	inputFile = open(args.src + "Europarl/europarl-v7.de-en.en" + SHORT, "r")
 	i = 0
 	while 1:
 		line = inputFile.readline()
@@ -250,7 +259,7 @@ def main(args):
 	fds["testDe"] = open(TEST_DATA_DE, "w+")
 	DetectorFactory.seed = 0 #For consistency with LangDetect
 	processParacrawl(args, fds, tokenizer)
-	processEuroparl(args, fds)
+	processEuroparl(args, fds, tokenizer)
 	processCommoncrawl(args, fds, tokenizer)
 	#Close the files now that they're finished
 	for fd in fds.keys():
