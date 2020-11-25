@@ -13,9 +13,10 @@ def main(args):
 	inputFile = open(args.input, "r")
 	outputFile = open(args.output, "w+")
 	while 1:
+		line = inputFile.readline()
 		if line == "":
 			break; #EOF reached
-		line = inputFile.readline().replace("\n", "")
+		line = line.replace("\n", "")
 		if line == "":
 			continue #Empty line, but not necessarily EOF yet
 		line = model.encode(line)
