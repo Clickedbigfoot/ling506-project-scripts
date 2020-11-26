@@ -16,12 +16,12 @@ VAL_DATA_EN = "valDataEn.txt"
 VAL_DATA_DE = "valDataDe.txt"
 TEST_DATA_EN = "testDataEn.txt"
 TEST_DATA_DE = "testDataDe.txt"
-SP_DATA_EN = "spmDataEn.txt"
-SP_DATA_DE = "spmDataDe.txt"
+TEST_DATA_REPLACE = "testReplace.txt"
 SHORT = ".short" #Change to empty string to use the non-shortened versions of these datasets
-PATTERN = r"[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[\.]\w+[\.]?\w+"
+EMAIL_PATTERN = r"[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[\.]\w+[\.]?\w+" #For emails
 HTML_PATTERN = "<.*?>"
 REPLACE_TOKEN = "<KN>"
+DELIMITER = ";$;"
 
 """
 Determines whether or not the sentence has too few words, too many, or any words that are too long
@@ -84,15 +84,35 @@ Cleans the input of any characters or strings that shouldn't be processed
 def getCleanLine(input):
 	# @TODO Filter out reddit usernames, emails, or html
 	result = "".join([c for c in input if c.isprintable()])
-	emails = re.findall(PATTERN, result)
-	while len(emails) > 0:
-		result = result.replace(emails[0], REPLACE_TOKEN)
-		emails = re.findall(PATTERN, result)
-	html = re.findall(HTML_PATTERN, result)
-	while len(html) > 0:
-		result = result.replace(html[0], "")
-		html = re.findall(HTML_PATTERN, result)
+	offenders = re.findall(HTML_PATTERN, result) #Get rid of errant html
+	while len(offenders) > 0:
+		result = result.replace(offenders[0], "")
+		offenders = re.findall(HTML_PATTERN, result)
+	offenders = re.findall(EMAIL_PATTERN, result)
+	while len(offenders) > 0:
+		result = result.replace(offenders[0], REPLACE_TOKEN)
+		offenders = re.findall(EMAIL_PATTERN, result)
 	return result.replace("\n", "").lower()
+
+"""
+Cleans the input of any characters or strings that shouldn't be processed
+@param input: the input that has to be cleaned
+@return the cleaned input and a string of tokens that have been replaced in the format (cleanedLine, "replacements")
+"""
+def getCleanLineR(input):
+	# @TODO Filter out reddit usernames, emails, or html
+	result = "".join([c for c in input if c.isprintable()])
+	replacements = ""
+	offenders = re.findall(HTML_PATTERN, result) #Get rid of errant html
+	while len(offenders) > 0:
+		result = result.replace(offenders[0], "")
+		offenders = re.findall(HTML_PATTERN, result)
+	offenders = re.findall(EMAIL_PATTERN, result)
+	while len(offenders) > 0:
+		result = result.replace(offenders[0], REPLACE_TOKEN)
+		replacements = replacements + offenders[0] + DELIMITER
+		offenders = re.findall(EMAIL_PATTERN, result)
+	return (result.replace("\n", "").lower(), replacements)
 
 """
 Processes and exports the commoncrawl data in a ready-to-use format
@@ -114,7 +134,7 @@ def processCommoncrawl(args, fds, tokenizer):
 		if line == "":
 			#EOF reached
 			break
-		germanLine = getCleanLine(line)
+		(germanLine, replacements) = getCleanLineR(line)
 		englishLine = getCleanLine(inputFileEn.readline())
 		(germanLine, englishLine) = getFiltered(germanLine, englishLine, tokenizer)
 		if germanLine == None or englishLine == None:
@@ -128,6 +148,7 @@ def processCommoncrawl(args, fds, tokenizer):
 		else:
 			fds["testDe"].write(germanLine + "\n")
 			fds["testEn"].write(englishLine + "\n")
+			fds["testR"].write(replacements + "\n")
 		i += 1 #Iterate forward
 		if i >= j:
 			#Finished with the testing set as well
@@ -159,11 +180,11 @@ def processEuroparl(args, fds, tokenizer):
 		englishLine = inputFileEn.readline()
 		if germanLine == "":
 			break #EOF reached
+		(germanLine, replacements) = getCleanLineR(germanLine)
+		englishLine = getCleanLine(englishLine)
 		(germanLine, englishLine) = getFiltered(germanLine, englishLine, tokenizer)
 		if germanLine == None or englishLine == None:
 			continue
-		germanLine = getCleanLine(germanLine)
-		englishLine = getCleanLine(englishLine)
 		if i < args.cap:
 			fds["trainDe"].write(germanLine + "\n")
 			fds["trainEn"].write(englishLine + "\n")
@@ -173,6 +194,7 @@ def processEuroparl(args, fds, tokenizer):
 		else:
 			fds["testDe"].write(germanLine + "\n")
 			fds["testEn"].write(englishLine + "\n")
+			fds["testR"].write(replacements + "\n")
 		i += 1 #Iterate forward
 		if i >= j:
 			#Finished with the testing set as well
@@ -202,7 +224,7 @@ def processParacrawl(args, fds, tokenizer):
 		if line == "":
 			#EOF reached
 			break
-		germanLine = getCleanLine(line[line.index("\t")+1:])
+		(germanLine, replacements) = getCleanLineR(line[line.index("\t")+1:])
 		englishLine = getCleanLine(line[:line.index("\t")])
 		(germanLine, englishLine) = getFiltered(germanLine, englishLine, tokenizer)
 		if germanLine == None or englishLine == None:
@@ -216,6 +238,7 @@ def processParacrawl(args, fds, tokenizer):
 		else:
 			fds["testDe"].write(germanLine + "\n")
 			fds["testEn"].write(englishLine + "\n")
+			fds["testR"].write(replacements + "\n")
 		i += 1 #Iterate forward
 		if i >= j:
 			#Finished with the testing set as well
@@ -241,6 +264,7 @@ def main(args):
 	fds["valDe"] = open(VAL_DATA_DE, "w+")
 	fds["testEn"] = open(TEST_DATA_EN, "w+")
 	fds["testDe"] = open(TEST_DATA_DE, "w+")
+	fds["testR"] = open(TEST_DATA_REPLACE, "w+")
 	DetectorFactory.seed = 0 #For consistency with LangDetect
 	processParacrawl(args, fds, tokenizer)
 	processEuroparl(args, fds, tokenizer)
