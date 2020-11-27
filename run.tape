@@ -27,15 +27,16 @@ task run_sentencepiece_de < script=./spEncoder.py model=$mDe@train_sentencepiece
 	python3 $script --model=$model --input $testI --output $test
 }
 
-task train_transformer < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en trainSrc=$train@run_sentencepiece_de trainTgt=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en > config=de_en0.yaml vSrc=system_data.vocab.src vTgt=system_data.vocab.tgt modelOutput=foo_step_1000.pt :: model=foo vc=system_data {
+task train_big_transformer < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en trainSrc=$train@run_sentencepiece_de trainTgt=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en > config=de_en0.yaml vSrc=system_data.vocab.src vTgt=system_data.vocab.tgt modelOutput=foo_step_1000.pt :: model=foo vc=system_data {
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model
 	echo "" > $vSrc
 	echo "" > $vTgt
 	onmt_build_vocab -config $config
-	onmt_train -config $config --master_port=8000
+	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
+	onmt_train -config $config --master_port=8000 -world_size 3 -gpu_ranks 4 5 6
 }
 
-task score_models < decodeScript=./spDecoder.py spModel=$mEn@train_sentencepiece model=$modelOutput@train_transformer src=$test@run_sentencepiece_de gold=$test@run_sentencepiece_en > pred=predictions.txt predDetok=predictionsDetokenized.txt {
+task score_models < decodeScript=./spDecoder.py spModel=$mEn@train_sentencepiece model=$modelOutput@train_big_transformer src=$test@run_sentencepiece_de gold=$test@run_sentencepiece_en > pred=predictions.txt predDetok=predictionsDetokenized.txt {
 	onmt_translate -model $model -src $src -output $pred
 	python3 $decodeScript --model $spModel --input $pred --output $predDetok
 	sacrebleu $gold < $predDetok

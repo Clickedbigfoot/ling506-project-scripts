@@ -8,6 +8,7 @@ from langdetect import detect #For determining the language of the sample
 from langdetect import DetectorFactory #Seed the langdetect module for consistency
 import re #Regular expression usage
 import string #For getting a set of punctuation
+import emoji #For extrscting emojis
 
 DEFAULT_SOURCE = "data/"
 TRAIN_DATA_EN = "trainDataEn.txt"
@@ -112,6 +113,13 @@ def getCleanLineR(input):
 		result = result.replace(offenders[0], REPLACE_TOKEN)
 		replacements = replacements + offenders[0] + DELIMITER
 		offenders = re.findall(EMAIL_PATTERN, result)
+	scannee = results
+	results = ""
+	for c in scannee:
+		if c in emoji.UNICODE_EMOJI:
+			replacements = replacements + c + DELIMITER
+		else:
+			results = results + c
 	return (result.replace("\n", "").lower(), replacements)
 
 """
