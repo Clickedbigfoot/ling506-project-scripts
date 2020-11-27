@@ -93,6 +93,11 @@ def getCleanLine(input):
 	while len(offenders) > 0:
 		result = result.replace(offenders[0], REPLACE_TOKEN)
 		offenders = re.findall(EMAIL_PATTERN, result)
+	scannee = result
+	result = ""
+	for c in scannee:
+		if c not in emoji.UNICODE_EMOJI:
+			result = result + c
 	return result.replace("\n", "").lower()
 
 """
@@ -113,13 +118,13 @@ def getCleanLineR(input):
 		result = result.replace(offenders[0], REPLACE_TOKEN)
 		replacements = replacements + offenders[0] + DELIMITER
 		offenders = re.findall(EMAIL_PATTERN, result)
-	scannee = results
-	results = ""
+	scannee = result
+	result = ""
 	for c in scannee:
 		if c in emoji.UNICODE_EMOJI:
 			replacements = replacements + c + DELIMITER
 		else:
-			results = results + c
+			result = result + c
 	return (result.replace("\n", "").lower(), replacements)
 
 """
