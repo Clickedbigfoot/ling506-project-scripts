@@ -35,22 +35,10 @@ task train_big_transformer < script=./configCreator.py template=./de_en.yaml tra
 	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 4 5 6
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model2 --ini 2
-	echo "" > $vSrc
-	echo "" > $vTgt
-	onmt_build_vocab -config $config
-	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 4 5 6
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model3 --ini 3
-	echo "" > $vSrc
-	echo "" > $vTgt
-	onmt_build_vocab -config $config
-	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 4 5 6
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $mode4 --ini 4
-	echo "" > $vSrc
-	echo "" > $vTgt
-	onmt_build_vocab -config $config
-	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 4 5 6
 }
 
