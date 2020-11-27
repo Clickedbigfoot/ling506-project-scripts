@@ -42,8 +42,7 @@ task train_big_transformer < script=./configCreator.py template=./de_en.yaml tra
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 4 5 6
 }
 
-task score_models < decodeScript=./spDecoder.py spModel=$mEn@train_sentencepiece model1=$modelOutput1@train_big_transformer
-model2=$modelOutput2@train_big_transformer model3=$modelOutput3@train_big_transformer model4=$modelOutput4@train_big_transformer src=$test@run_sentencepiece_de gold=$test@run_sentencepiece_en > pred=predictions.txt predDetok=predictionsDetokenized.txt {
+task score_models < decodeScript=./spDecoder.py spModel=$mEn@train_sentencepiece model1=$modelOutput1@train_big_transformer model2=$modelOutput2@train_big_transformer model3=$modelOutput3@train_big_transformer model4=$modelOutput4@train_big_transformer src=$test@run_sentencepiece_de gold=$test@run_sentencepiece_en > pred=predictions.txt predDetok=predictionsDetokenized.txt {
 	onmt_translate -model $model1 $model2 $model3 $model4 -src $src -output $pred
 	python3 $decodeScript --model $spModel --input $pred --output $predDetok
 	sacrebleu $gold < $predDetok
