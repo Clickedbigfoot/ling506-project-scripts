@@ -33,7 +33,7 @@ task train_big_transformer < script=./configCreator.py template=./de_en.yaml tra
 	echo "" > $vTgt
 	onmt_build_vocab -config $config
 	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
-	onmt_train -config $config --master_port=8000 -world_size 3 -gpu_ranks 4 5 6
+	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 4 5 6
 }
 
 task score_models < decodeScript=./spDecoder.py spModel=$mEn@train_sentencepiece model=$modelOutput@train_big_transformer src=$test@run_sentencepiece_de gold=$test@run_sentencepiece_en > pred=predictions.txt predDetok=predictionsDetokenized.txt {
