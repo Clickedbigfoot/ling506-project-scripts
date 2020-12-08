@@ -32,14 +32,14 @@ task train_big_transformer < script=./configCreator.py template=./de_en.yaml tra
 	echo "" > $vSrc
 	echo "" > $vTgt
 	onmt_build_vocab -config $config
-	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
-	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 4 5 6
+	CUDA_VISIBLE_DEVICES=4,5,6,7
+	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model2 --ini 2
-	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 4 5 6
+	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model3 --ini 3
-	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 4 5 6
+	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $mode4 --ini 4
-	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 4 5 6
+	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
 }
 
 task score_models < decodeScript=./spDecoder.py spModel=$mEn@train_sentencepiece model1=$modelOutput1@train_big_transformer model2=$modelOutput2@train_big_transformer model3=$modelOutput3@train_big_transformer model4=$modelOutput4@train_big_transformer src=$test@run_sentencepiece_de gold=$test@run_sentencepiece_en > pred=predictions.txt predDetok=predictionsDetokenized.txt {
