@@ -18,7 +18,9 @@ VAL_DATA_DE = "valDataDe.txt"
 TEST_DATA_EN = "testDataEn.txt"
 TEST_DATA_DE = "testDataDe.txt"
 TEST_DATA_REPLACE = "testReplace.txt"
-SHORT = ".short" #Change to empty string to use the non-shortened versions of these datasets
+TRAIN_FT_DE = "ftDe.txt"
+TRAIN_FT_EN = "ftEn.txt"
+SHORT = "" #Change to empty string to use the non-shortened versions of these datasets or restore to ".short" to use shortened versions
 EMAIL_PATTERN = r"[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[\.]\w+[\.]?\w+" #For emails
 HTML_PATTERN = "<.*?>"
 REPLACE_TOKEN = "<KN>"
@@ -212,6 +214,23 @@ def processEuroparl(args, fds, tokenizer):
 		if i >= j:
 			#Finished with the testing set as well
 			break
+	i = 0
+	while 1:
+		germanLine = inputFile.readline()
+		englishLine = inputFileEn.readline()
+		if germanLine == "":
+			break #EOF reached
+		(germanLine, replacements) = getCleanLineR(germanLine)
+		englishLine = getCleanLine(englishLine)
+		(germanLine, englishLine) = getFiltered(germanLine, englishLine, tokenizer)
+		if germanLine == None or englishLine == None:
+			continue
+		fds["trainFtDe"].write(germanLine + "\n")
+		fds["trainFtEn"].write(englishLine + "\n")
+		i += 1 #Iterate forward
+		if i >= 16385:
+			#Finished with the training set for fine-tuning
+			break
 	inputFile.close()
 	inputFileEn.close()
 	print("Saved " + str(args.cap) + " sentence pairs from Europarl to training data")
@@ -278,6 +297,8 @@ def main(args):
 	fds["testEn"] = open(TEST_DATA_EN, "w+")
 	fds["testDe"] = open(TEST_DATA_DE, "w+")
 	fds["testR"] = open(TEST_DATA_REPLACE, "w+")
+	fds["trainFtDe"] = open(TRAIN_FT_DE, "w+")
+	fds["trainFtEn"] = open(TRAIN_FT_EN, "w+")
 	DetectorFactory.seed = 0 #For consistency with LangDetect
 	processParacrawl(args, fds, tokenizer)
 	processEuroparl(args, fds, tokenizer)

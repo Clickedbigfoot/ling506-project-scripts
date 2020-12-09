@@ -22,9 +22,9 @@ skip_empty_level: silent
 
 # General opts
 save_model: foo
-save_checkpoint_steps: 1000 #Was 10000
-valid_steps: 500 #Was originally 1000
-train_steps: 1000 #Was 200000
+save_checkpoint_steps: 500000 #Was 10000
+valid_steps: 1000 #Was originally 1000
+train_steps: 4000000 #Was 200000
 
 # Batching
 queue_size: 10000
