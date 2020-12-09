@@ -41,38 +41,51 @@ task baseline_model < script=./configCreator.py template=./de_en.yaml trainDe=$t
 	sacrebleu $testEn < $predDetok
 }
 
-task ensembles < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en trainSrc=$train@run_sentencepiece_de trainTgt=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en decodeScript=./spDecoder.py spModel=$mEn@train_sentencepiece testDe=$test@run_sentencepiece_de testEn=$test@run_sentencepiece_en trainFtDe=$ftDe@run_sentencepiece_de trainFtEn=$ftEn@run_sentencepiece_en > config=de_en0.yaml vSrc=system_data.vocab.src vTgt=system_data.vocab.tgt modelOutput1=foo1_step_4000000.pt modelOutput2=foo2_step_4000000.pt modelOutput3=foo3_step_4000000.pt modelOutput4=foo4_step_4000000.pt modelOutputF1=foo1_step_16384.pt modelOutputF2=foo2_step_16384.pt modelOutputF3=foo3_step_16384.pt modelOutputF4=foo4_step_16384.pt :: model1=foo1 model2=foo2 model3=foo3 model4=foo4 vc=system_data {
+task build_vocab < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en trainSrc=$train@run_sentencepiece_de trainTgt=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en trainFtDe=$ftDe@run_sentencepiece_de trainFtEn=$ftEn@run_sentencepiece_en > config=de_en0.yaml vSrc=system_data.vocab.src vTgt=system_data.vocab.tgt vc=system_data :: model=foo {
 	#Build vocab
-	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe $trainFtDe --train_path_tgt $trainEn $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model1 --ini 1
+	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe $trainFtDe --train_path_tgt $trainEn $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 0
 	echo "" > $vSrc
 	echo "" > $vTgt
 	onmt_build_vocab -config $config
-	CUDA_VISIBLE_DEVICES=4,5,6,7
-	
+}
+
+task ensemble1 < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en trainSrc=$train@run_sentencepiece_de trainTgt=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en trainFtDe=$ftDe@run_sentencepiece_de trainFtEn=$ftEn@run_sentencepiece_en vSrc=$vSrc@build_vocab vTgt=$vTgt@build_vocab vc=$vc@build_vocab > config=de_en0.yaml modelOutput=foo_step_4000000.pt modelOutputF=foo_step_16384.pt :: model=foo {
 	#Train first model
-	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model1 --ini 1
+	CUDA_VISIBLE_DEVICES=4,5,6,7
+	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 1
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
-	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainFtDe --train_path_tgt $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model1 --ini 1
-	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3 --train_steps 16384 --save_checkpoint_steps 16384 --train_from $modelOutput1 --learning_rate 0.1
-	
+	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainFtDe --train_path_tgt $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 1
+	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3 --train_steps 16384 --save_checkpoint_steps 16384 --train_from $modelOutput --learning_rate 0.1
+}
+
+task ensemble2 < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en trainSrc=$train@run_sentencepiece_de trainTgt=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en trainFtDe=$ftDe@run_sentencepiece_de trainFtEn=$ftEn@run_sentencepiece_en vSrc=$vSrc@build_vocab vTgt=$vTgt@build_vocab vc=$vc@build_vocab > config=de_en0.yaml modelOutput=foo_step_4000000.pt modelOutputF=foo_step_16384.pt :: model=foo {
 	#Train second model
-	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model2 --ini 2
+	CUDA_VISIBLE_DEVICES=4,5,6,7
+	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 2
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
-	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainFtDe --train_path_tgt $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model2 --ini 2
-	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3 --train_steps 16384 --save_checkpoint_steps 16384 --train_from $modelOutput2 --learning_rate 0.1
-	
+	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainFtDe --train_path_tgt $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 2
+	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3 --train_steps 16384 --save_checkpoint_steps 16384 --train_from $modelOutput --learning_rate 0.1
+}
+
+task ensemble3 < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en trainSrc=$train@run_sentencepiece_de trainTgt=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en trainFtDe=$ftDe@run_sentencepiece_de trainFtEn=$ftEn@run_sentencepiece_en vSrc=$vSrc@build_vocab vTgt=$vTgt@build_vocab vc=$vc@build_vocab > config=de_en0.yaml modelOutput=foo_step_4000000.pt modelOutputF=foo_step_16384.pt :: model=foo {
 	#Train third model
-	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model3 --ini 3
+	CUDA_VISIBLE_DEVICES=4,5,6,7
+	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 3
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
-	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainFtDe --train_path_tgt $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model3 --ini 3
-	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3 --train_steps 16384 --save_checkpoint_steps 16384 --train_from $modelOutput3 --learning_rate 0.1
-	
+	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainFtDe --train_path_tgt $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 3
+	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3 --train_steps 16384 --save_checkpoint_steps 16384 --train_from $modelOutput --learning_rate 0.1
+}
+
+task ensemble4 < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en trainSrc=$train@run_sentencepiece_de trainTgt=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en trainFtDe=$ftDe@run_sentencepiece_de trainFtEn=$ftEn@run_sentencepiece_en vSrc=$vSrc@build_vocab vTgt=$vTgt@build_vocab vc=$vc@build_vocab > config=de_en0.yaml modelOutput=foo_step_4000000.pt modelOutputF=foo_step_16384.pt :: model=foo {
 	#Train fourth model
-	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model4 --ini 4
+	CUDA_VISIBLE_DEVICES=4,5,6,7
+	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 4
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
-	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainFtDe --train_path_tgt $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model4 --ini 4
-	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3 --train_steps 16384 --save_checkpoint_steps 16384 --train_from $modelOutput4 --learning_rate 0.1
-	
+	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainFtDe --train_path_tgt $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 4
+	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3 --train_steps 16384 --save_checkpoint_steps 16384 --train_from $modelOutput --learning_rate 0.1
+}
+
+task score_ensemble < decodeScript=./spDecoder.py spModel=$mEn@train_sentencepiece testDe=$test@run_sentencepiece_de testEn=$test@run_sentencepiece_en model1=$modelOutputF@ensemble1 model2=$modelOutputF@ensemble2 model3=$modelOutputF@ensemble3 model4=$modelOutputF@ensemble4 > pred=predictions.txt predDetok=predictionsDetok.txt {
 	#Score ensemble
 	onmt_translate -model $modelOutputF1 $modelOutputF2 $modelOutputF3 $modelOutputF4 -src $testDe -output $pred
 	python3 $decodeScript --model $spModel --input $pred --output $predDetok
