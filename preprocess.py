@@ -327,9 +327,6 @@ def main(args):
 		print("Invalid or no arguments found for dataset paths. Please run with -h flag for usage")
 		exit(1)
 	print("Preprocess script starting")
-	if args.src[-1] != "/":
-		#Fix the directory processing
-		args.src = args.src + "/"
 	tokenizer = {} #Dict of the tokenizers
 	tokenizer["de"] = MosesTokenizer("de")
 	tokenizer["en"] = MosesTokenizer("en")
