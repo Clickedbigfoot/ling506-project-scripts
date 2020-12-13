@@ -9,7 +9,10 @@ def main(args):
 	if args.input == "" or args.output == "" or args.model == "":
 		print("Incorrect usage. Please see spEncoder.py -h")
 		exit(1)
-	model = spm.SentencePieceProcessor(model_file=args.model)
+	if args.text:
+		model = spm.SentencePieceProcessor(model_file=args.model, out_type=str)
+	else:
+		model = spm.SentencePieceProcessor(model_file=args.model)
 	inputFile = open(args.input, "r")
 	outputFile = open(args.output, "w+")
 	while 1:
@@ -32,5 +35,6 @@ if __name__ == "__main__":
 	parser.add_argument('--input', dest='input', type=str, default="", help="Data for encoding")
 	parser.add_argument('--output', dest='output', type=str, default="", help="Output for encoded data")
 	parser.add_argument('--model', dest='model', type=str, default="", help="The trained model to use")
+	parser.add_argument("-s", "--out_type_str", action="store_true", dest="text", help="Changes encoding style from ints to strings")
 	args = parser.parse_args()
 	main(args)

@@ -24,7 +24,8 @@ def main(args):
 		if line == "":
 			break #EOF reached
 		sample = line.split()
-		sample = convertToInt(sample)
+		if not args.text:
+			sample = convertToInt(sample)
 		line = model.decode(sample)
 		outputFile.write(line)
 		outputFile.write("\n")
@@ -37,5 +38,6 @@ if __name__ == "__main__":
 	parser.add_argument('--input', dest='input', type=str, default="", help="Data for decoding")
 	parser.add_argument('--output', dest='output', type=str, default="", help="Output for decoded data")
 	parser.add_argument('--model', dest='model', type=str, default="", help="The trained model to use")
+	parser.add_argument("-s", "--out_type_str", action="store_true", dest="text", help="Changes reading input style from ints to strings")
 	args = parser.parse_args()
 	main(args)

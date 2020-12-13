@@ -10,7 +10,6 @@ import re #Regular expression usage
 import string #For getting a set of punctuation
 import emoji #For extrscting emojis
 
-DEFAULT_SOURCE = "data/"
 TRAIN_DATA_EN = "trainDataEn.txt"
 TRAIN_DATA_DE = "trainDataDe.txt"
 VAL_DATA_EN = "valDataEn.txt"
@@ -20,7 +19,6 @@ TEST_DATA_DE = "testDataDe.txt"
 TEST_DATA_REPLACE = "testReplace.txt"
 TRAIN_FT_DE = "ftDe.txt"
 TRAIN_FT_EN = "ftEn.txt"
-SHORT = "" #Change to empty string to use the non-shortened versions of these datasets or restore to ".short" to use shortened versions
 EMAIL_PATTERN = r"[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[\.]\w+[\.]?\w+" #For emails
 HTML_PATTERN = "<.*?>"
 REPLACE_TOKEN = "<KN>"
@@ -130,6 +128,49 @@ def getCleanLineR(input):
 	return (result.replace("\n", "").lower(), replacements)
 
 """
+Processes and exports the backtranslations data in a ready-to-use format
+@param args: the argument parser
+@param fds: dict of the files to which data will be written
+@param tokenizer: dict of the tokenizers
+"""
+def processBacktranslations(args, fds, tokenizer):
+	print("Processing data from Backtranslations")
+	germanData = []
+	englishData = []
+	inputFile = open(args.backtranslationsDe, "r")
+	inputFileEn = open(args.backtranslationsEn, "r")
+	i = 0
+	k = args.cap + round(args.cap * 0.01) #Cap for validation set
+	j = k + round(args.cap * 0.01) #Cap for testing set
+	while 1:
+		line = inputFile.readline()
+		if line == "":
+			#EOF reached
+			break
+		(germanLine, replacements) = getCleanLineR(line)
+		englishLine = getCleanLine(inputFileEn.readline())
+		(germanLine, englishLine) = getFiltered(germanLine, englishLine, tokenizer)
+		if germanLine == None or englishLine == None:
+			continue
+		if i < args.cap:
+			fds["trainDe"].write(germanLine + "\n")
+			fds["trainEn"].write(englishLine + "\n")
+		elif i < k:
+			fds["valDe"].write(germanLine + "\n")
+			fds["valEn"].write(englishLine + "\n")
+		else:
+			fds["testDe"].write(germanLine + "\n")
+			fds["testEn"].write(englishLine + "\n")
+			fds["testR"].write(replacements + "\n")
+		i += 1 #Iterate forward
+		if i >= j:
+			#Finished with the testing set as well
+			break
+	inputFile.close()
+	inputFileEn.close()
+	print("Saved " + str(args.cap) + " sentence pairs from Backtranslations to training data")
+
+"""
 Processes and exports the commoncrawl data in a ready-to-use format
 @param args: the argument parser
 @param fds: dict of the files to which data will be written
@@ -139,8 +180,8 @@ def processCommoncrawl(args, fds, tokenizer):
 	print("Processing data from CommonCrawl")
 	germanData = []
 	englishData = []
-	inputFile = open(args.src + "CommonCrawl/commoncrawl.de-en.de" + SHORT, "r")
-	inputFileEn = open(args.src + "CommonCrawl/commoncrawl.de-en.en" + SHORT, "r")
+	inputFile = open(args.commoncrawlDe, "r")
+	inputFileEn = open(args.commoncrawlEn, "r")
 	i = 0
 	k = args.cap + round(args.cap * 0.01) #Cap for validation set
 	j = k + round(args.cap * 0.01) #Cap for testing set
@@ -185,8 +226,8 @@ def processEuroparl(args, fds, tokenizer):
 	print("Processing data from Europarl")
 	germanData = []
 	englishData = []
-	inputFile = open(args.src + "Europarl/europarl-v7.de-en.de" + SHORT, "r")
-	inputFileEn = open(args.src + "Europarl/europarl-v7.de-en.en" + SHORT, "r")
+	inputFile = open(args.europarlDe, "r")
+	inputFileEn = open(args.europarlEn, "r")
 	i = 0
 	k = args.cap + round(args.cap * 0.01) #Cap for validation set
 	j = k + round(args.cap * 0.01) #Cap for testing set
@@ -247,7 +288,7 @@ def processParacrawl(args, fds, tokenizer):
 	print("Processing data from ParaCrawl")
 	germanData = []
 	englishData = []
-	inputFile = open(args.src + "ParaCrawl/en-de.txt" + SHORT, "r")
+	inputFile = open(args.paracrawl, "r")
 	i = 0
 	k = args.cap + round(args.cap * 0.01) #Cap for validation set
 	j = k + round(args.cap * 0.01) #Cap for testing set
@@ -282,6 +323,9 @@ def processParacrawl(args, fds, tokenizer):
 
 
 def main(args):
+	if args.backtranslationsDe == "" or args.backtranslationsEn == "" or args.commoncrawlDe == "" or args.commoncrawlEn == "" or args.europarlDe == "" or args.europarlEn == "" or args.paracrawl == "":
+		print("Invalid or no arguments found for dataset paths. Please run with -h flag for usage")
+		exit(1)
 	print("Preprocess script starting")
 	if args.src[-1] != "/":
 		#Fix the directory processing
@@ -311,8 +355,14 @@ def main(args):
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Preprocesses data for training a German-to-English machine translation system")
 	#parser.add_argument('-t', dest='test', type=bool, default=False, help='This is a test argument, ignore it')
-	parser.add_argument('-s', dest='src', type=str, default=DEFAULT_SOURCE, help="Source directory for this script's input data. Default=" + DEFAULT_SOURCE)
 	parser.add_argument('-n', dest='cap', type=int, default=sys.maxsize, help="Limits the amount of samples processed per source for the training data. 1\% of the size will be used for validation and test sets. Default=" + str(sys.maxsize))
+	parser.add_argument('--backtranslations_en', dest='backtranslationsEn', type=str, default="", help="Path to the english sentences for backtranslations")
+	parser.add_argument('--backtranslations_de', dest='backtranslationsDe', type=str, default="", help="Path to the german sentences for backtranslations")
+	parser.add_argument('--europarl_en', dest='europarlEn', type=str, default="", help="Path to the english sentences for Europarl")
+	parser.add_argument('--europarl_de', dest='europarlDe', type=str, default="", help="Path to the german sentences for Europarl")
+	parser.add_argument('--commoncrawl_en', dest='commoncrawlEn', type=str, default="", help="Path to the english sentences for CommonCrawl")
+	parser.add_argument('--commoncrawl_de', dest='commoncrawlDe', type=str, default="", help="Path to the german sentences for CommonCrawl")
+	parser.add_argument('--paracrawl', dest='paracrawl', type=str, default="", help="Path to the sentence pairs for ParaCrawl")
 	args = parser.parse_args()
 	main(args)
 
