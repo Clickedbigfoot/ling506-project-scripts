@@ -1,6 +1,6 @@
 global {
 	ducttape_structure=flat
-	nFt=1000
+	nFt=6000
 }
 
 task download_data > europarlDe=europarl-v7.de-en.de europarlEn=europarl-v7.de-en.en paracrawl=en-de.txt commoncrawlDe=commoncrawl.de-en.de commoncrawlEn=commoncrawl.de-en.en newscrawlEn=news.2019.en.shuffled.deduped newscrawlDe=news.2019.de.shuffled.deduped {
