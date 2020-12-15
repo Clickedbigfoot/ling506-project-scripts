@@ -65,7 +65,7 @@ task baseline_model < script=./configCreator.py template=./de_en.yaml trainDe=$t
 	echo "" > $vSrc
 	echo "" > $vTgt
 	onmt_build_vocab -config $config
-	CUDA_VISIBLE_DEVICES=4,5,6,7
+	export CUDA_VISIBLE_DEVICES=4,5,6,7
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
 	onmt_translate -model $model1 -src $testDe -output $pred
 	python3 $decodeScript --model $spModel --input $pred --output $predDetok
