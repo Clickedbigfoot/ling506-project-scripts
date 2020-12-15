@@ -22,7 +22,7 @@ task download_data > europarlDe=europarl-v7.de-en.de europarlEn=europarl-v7.de-e
 
 task backtranslate < newscrawl=$newscrawlEn@download_data encodeScript=./spEncoder.py decodeScript=./spDecoder.py > de=predDetok.txt en=en.txt :: N=12000 {
 	#Shorten newscrawl data
-	head -n $N < $newscrawl | sed '/^[[:space:]]*$/d' > $en
+	head -n $N < $newscrawl | sed '/^[[:space:]]*$/d' | sed '/^.\{30\}./d' > $en
 	#Download pretrained models
 	wget https://s3.amazonaws.com/opennmt-models/transformer-ende-wmt-pyOnmt.tar.gz
 	tar -xzvf transformer-ende-wmt-pyOnmt.tar.gz
