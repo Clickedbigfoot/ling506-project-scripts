@@ -19,7 +19,7 @@ Makes the necessary replacements and returns the complete line
 def makeReplacements(predictions, replacements):
 	outputLine = predictions
 	replL = replacements.split(DELIMITER) #Last item on the list is, at least, newline byte
-	while len(replL > 1):
+	while len(replL) > 1:
 		#As long as there is more than the newline byte
 		if REPLACE_TOKEN not in outputLine:
 			break
