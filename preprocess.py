@@ -344,6 +344,7 @@ def main(args):
 	processParacrawl(args, fds, tokenizer)
 	processEuroparl(args, fds, tokenizer)
 	processCommoncrawl(args, fds, tokenizer)
+	processBacktranslations(args, fds, tokenizer)
 	#Close the files now that they're finished
 	for fd in fds.keys():
 		fds[fd].close()
