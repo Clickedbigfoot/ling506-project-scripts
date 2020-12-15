@@ -86,7 +86,7 @@ task build_vocab < script=./configCreator.py template=./de_en.yaml trainDe=$trai
 
 task ensemble1 < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en trainFtDe=$ftDe@run_sentencepiece_de trainFtEn=$ftEn@run_sentencepiece_en vSrc=$vSrc@build_vocab vTgt=$vTgt@build_vocab > config=de_en0.yaml modelOutput=foo_step_5000.pt modelOutputF=foo_step_6000.pt :: vc=system_data model=foo ftSteps=$nFt {
 	#Train first model
-	CUDA_VISIBLE_DEVICES=4,5,6,7
+	export CUDA_VISIBLE_DEVICES=4,5,6,7
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 1
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainFtDe --train_path_tgt $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 1
@@ -95,7 +95,7 @@ task ensemble1 < script=./configCreator.py template=./de_en.yaml trainDe=$train@
 
 task ensemble2 < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en trainFtDe=$ftDe@run_sentencepiece_de trainFtEn=$ftEn@run_sentencepiece_en vSrc=$vSrc@build_vocab vTgt=$vTgt@build_vocab > config=de_en0.yaml modelOutput=foo_step_5000.pt modelOutputF=foo_step_6000.pt :: vc=system_data model=foo ftSteps=$nFt {
 	#Train first model
-	CUDA_VISIBLE_DEVICES=4,5,6,7
+	export CUDA_VISIBLE_DEVICES=4,5,6,7
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 1
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainFtDe --train_path_tgt $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 1
@@ -104,7 +104,7 @@ task ensemble2 < script=./configCreator.py template=./de_en.yaml trainDe=$train@
 
 task ensemble3 < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en trainFtDe=$ftDe@run_sentencepiece_de trainFtEn=$ftEn@run_sentencepiece_en vSrc=$vSrc@build_vocab vTgt=$vTgt@build_vocab > config=de_en0.yaml modelOutput=foo_step_5000.pt modelOutputF=foo_step_6000.pt :: vc=system_data model=foo ftSteps=$nFt {
 	#Train first model
-	CUDA_VISIBLE_DEVICES=4,5,6,7
+	export CUDA_VISIBLE_DEVICES=4,5,6,7
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 1
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainFtDe --train_path_tgt $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 1
@@ -113,7 +113,7 @@ task ensemble3 < script=./configCreator.py template=./de_en.yaml trainDe=$train@
 
 task ensemble4 < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en trainFtDe=$ftDe@run_sentencepiece_de trainFtEn=$ftEn@run_sentencepiece_en vSrc=$vSrc@build_vocab vTgt=$vTgt@build_vocab > config=de_en0.yaml modelOutput=foo_step_5000.pt modelOutputF=foo_step_6000.pt :: vc=system_data model=foo ftSteps=$nFt {
 	#Train first model
-	CUDA_VISIBLE_DEVICES=4,5,6,7
+	export CUDA_VISIBLE_DEVICES=4,5,6,7
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 1
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
 	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainFtDe --train_path_tgt $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 1
