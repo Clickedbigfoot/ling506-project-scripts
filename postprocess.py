@@ -39,10 +39,10 @@ def main(args):
 		if prediction == "":
 			break #EOF reached
 		replacements = replaceFile.readline()
-		outputLine.replace("«", '"')
-		outputLine.replace("»", '"')
-		outputLine = makeReplacements(prediction, replacements)
-		outputFile.write(outputLine)
+		prediction = prediction.replace("«", '"')
+		prediction = prediction.replace("»", '"')
+		prediction = makeReplacements(prediction, replacements)
+		outputFile.write(prediction)
 	inputFile.close()
 	outputFile.close()
 	replaceFile.close()
