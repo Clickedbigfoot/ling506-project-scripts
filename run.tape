@@ -36,8 +36,8 @@ task backtranslate < newscrawl=$newscrawlEn@download_data encodeScript=./spEncod
 #Creates a trainingEn.txt trainingDe.txt, validation and testing versions of the former, as well as spmDataEn.txt and spmDataDe.txt in the data/ directory
 task prepare_data < script=./preprocess.py spmTrainEn=$newscrawlEn@download_data spmTrainDe=$newscrawlDe@download_data btDe=$de@backtranslate btEn=$en@backtranslate euroDe=$europarlDe@download_data euroEn=$europarlEn@download_data ccDe=$commoncrawlDe@download_data ccEn=$commoncrawlEn@download_data pc=$paracrawl@download_data > trainEn=trainDataEn.txt trainDe=trainDataDe.txt testEn=testDataEn.txt testDe=testDataDe.txt valEn=valDataEn.txt valDe=valDataDe.txt spmEn=spmDataEn.txt spmDe=spmDataDe.txt testR=testReplace.txt ftEn=ftEn.txt ftDe=ftDe.txt :: N=10000 {
 	python3 $script -n $N --backtranslations_de $btDe --backtranslations_en $btEn --europarl_de $euroDe --europarl_en $euroEn --commoncrawl_de $ccDe --commoncrawl_en $ccEn --paracrawl $pc
-	head -n $N < $spmTrainDe > $spmDe
-	head -n $N < $spmTrainEn > $spmEn
+	head -n 500000 < $spmTrainDe > $spmDe
+	head -n 500000 < $spmTrainEn > $spmEn
 }
 
 #Original vocab size was 23000 for training sizes of 1000000
