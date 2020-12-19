@@ -121,7 +121,7 @@ task ensemble4 < script=./configCreator.py template=./de_en.yaml trainDe=$train@
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3 --train_steps $ftSteps --save_checkpoint_steps 1000 --train_from $modelOutput --learning_rate 0.1
 }
 
-task score_ensemble < decodeScript=./spDecoder.py spModel=$mEn@train_sentencepiece testDe=$test@run_sentencepiece_de testEn=$test@run_sentencepiece_en model1=$modelOutputF@ensemble1 model2=$modelOutputF@ensemble2 model3=$modelOutputF@ensemble3 model4=$modelOutputF@ensemble4 postScript=./postprocess.py testR=$testR@prepare_data > pred=predictions.txt predDetok=predictionsDetok.txt predPost=predictionsPost.txt {
+task score_ensemble < decodeScript=./spDecoder.py spModel=$mEn@train_sentencepiece testDe=$test@run_sentencepiece_de testEn=$testEn@prepare_data model1=$modelOutputF@ensemble1 model2=$modelOutputF@ensemble2 model3=$modelOutputF@ensemble3 model4=$modelOutputF@ensemble4 postScript=./postprocess.py testR=$testR@prepare_data > pred=predictions.txt predDetok=predictionsDetok.txt predPost=predictionsPost.txt {
 	#Score ensemble
 	onmt_translate -model $model1 $model2 $model3 $model4 -src $testDe -output $pred --gpu 4
 	python3 $decodeScript --model $spModel --input $pred --output $predDetok
