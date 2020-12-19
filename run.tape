@@ -107,19 +107,13 @@ task ensemble3 < script=./configCreator.py template=./de_en.yaml trainDe=$train@
 	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3 --train_steps $ftSteps --save_checkpoint_steps 1000 --train_from $modelOutput --learning_rate 0.1
 }
 
-task ensemble4 < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en trainFtDe=$ftDe@run_sentencepiece_de trainFtEn=$ftEn@run_sentencepiece_en vSrc=$vSrc@build_vocab vTgt=$vTgt@build_vocab > config=de_en0.yaml modelOutput=foo_step_40000.pt modelOutputF=foo_step_42000.pt :: vc=system_data model=foo ftSteps=$nFt {
-	#Train first model
-	export CUDA_VISIBLE_DEVICES=4,5,6,7
-	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 1
-	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
-	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainFtDe --train_path_tgt $trainFtEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model --ini 1
-	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3 --train_steps $ftSteps --save_checkpoint_steps 1000 --train_from $modelOutput --learning_rate 0.1
-}
-
 task score_ensemble < decodeScript=./spDecoder.py spModel=$mEn@train_sentencepiece testDe=$test@run_sentencepiece_de testEn=$testEn@prepare_data model1=$modelOutputF@ensemble1 model2=$modelOutputF@ensemble2 model3=$modelOutputF@ensemble3 model4=$modelOutputF@ensemble4 postScript=./postprocess.py testR=$testR@prepare_data > pred=predictions.txt predDetok=predictionsDetok.txt predPost=predictionsPost.txt {
 	#Score ensemble
 	onmt_translate -model $model1 $model2 $model3 $model4 -src $testDe -output $pred --gpu 4
 	python3 $decodeScript --model $spModel --input $pred --output $predDetok
 	python3 $postScript -i $predDetok -o $predPost -r $testR
-	sacrebleu $testEn < $predPost
+	sacrebleu $testEn -b < $predPost
 }
+
+#Baseline BLEU: 25.3
+#Ensemble BLEU: 13.1???????
