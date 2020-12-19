@@ -60,13 +60,8 @@ task run_sentencepiece_de < script=./spEncoder.py model=$mDe@train_sentencepiece
 	python3 $script --model=$model --input $ftDeI --output $ftDe
 }
 
-task baseline_model < script=./configCreator.py template=./de_en.yaml trainDe=$train@run_sentencepiece_de trainEn=$train@run_sentencepiece_en trainSrc=$train@run_sentencepiece_de trainTgt=$train@run_sentencepiece_en valDataDe=$val@run_sentencepiece_de valDataEn=$val@run_sentencepiece_en decodeScript=./spDecoder.py spModel=$mEn@train_sentencepiece testDe=$test@run_sentencepiece_de testEn=$test@run_sentencepiece_en > config=de_en0.yaml vSrc=system_data.vocab.src vTgt=system_data.vocab.tgt modelOutput1=foo1_step_40000.pt pred=predictions.txt predDetok=predictionsDetokenized.txt :: model1=foo1 vc=system_data {
-	python3 $script -t $template -o $config --src_vocab $vSrc --tgt_vocab $vTgt --save_data $vc --train_path_src $trainDe --train_path_tgt $trainEn --val_path_src $valDataDe --val_path_tgt $valDataEn --save_model $model1 --ini 1
-	echo "" > $vSrc
-	echo "" > $vTgt
-	onmt_build_vocab -config $config
-	export CUDA_VISIBLE_DEVICES=4,5,6,7
-	onmt_train -config $config --master_port=8000 -world_size 4 -gpu_ranks 0 1 2 3
+task baseline_model < decodeScript=./spDecoder.py spModel=$mEn@train_sentencepiece testDe=$test@run_sentencepiece_de testEn=$testEn@prepare_data model1=$modelOutput@ensemble1 postScript=./postprocess.py testR=$testR@prepare_data > pred=predictions.txt predDetok=predictionsDetokenized.txt predPost=predictionsPost.txt {
+	export CUDA_VISIBLE_DEVICES=6,7
 	onmt_translate -model $model1 -src $testDe -output $pred
 	python3 $decodeScript --model $spModel --input $pred --output $predDetok
 	python3 $postScript -i $predDetok -o $predPost -r $testR
